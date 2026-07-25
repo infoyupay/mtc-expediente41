@@ -13,6 +13,16 @@ import static org.assertj.core.api.Assertions.tuple;
 
 /**
  * Tests for {@link PdfDocumentParser} and {@link PdfDocuments}.
+ *  <div data-infoyupay="manual-test-verification"
+ *    style="border:1px solid #c00;
+ *    border-radius:2px;
+ *    padding:4px;
+ *    color:#c00;
+ *    margin-top:6px;
+ *    margin-bottom:6px;">
+ *       <strong>Tested-by:</strong>
+ *       dvidal@infoyupay.com - passed 8 tests in 2.228s at 2026-07-25T01:16:32 (UTC-5).
+ * </div>
  *
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
