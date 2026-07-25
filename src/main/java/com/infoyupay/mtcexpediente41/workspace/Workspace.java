@@ -30,6 +30,13 @@ public record Workspace(
 
     /**
      * Creates an immutable workspace description.
+     *
+     * @param rootDirectory               root directory selected by the user
+     * @param workbook                    spreadsheet workbook found in the workspace
+     * @param pdfFiles                    source PDF files found in the workspace
+     * @param outputDirectory             root directory for generated documents
+     * @param individualOutputDirectory   directory for individual expedients
+     * @param consolidatedOutputDirectory directory for consolidated documents
      */
     public Workspace {
         Objects.requireNonNull(rootDirectory, "rootDirectory");

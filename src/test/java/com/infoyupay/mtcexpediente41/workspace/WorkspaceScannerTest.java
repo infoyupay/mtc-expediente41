@@ -11,6 +11,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for {@link WorkspaceScanner}.
+ *  <div data-infoyupay="manual-test-verification"
+ *    style="border:1px solid #c00;
+ *    border-radius:2px;
+ *    padding:4px;
+ *    color:#c00;
+ *    margin-top:6px;
+ *    margin-bottom:6px;">
+ *       <strong>Tested-by:</strong>
+ *       dvidal@infoyupay.com - passed 3 tests in 2.241s at 2026-07-25T00:34:14 (UTC-5).
+ * </div>
  *
  * @author David Vidal - InfoYupay SACS
  * @version 1.0

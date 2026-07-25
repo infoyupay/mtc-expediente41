@@ -1,7 +1,7 @@
 /**
  * Provides components for discovering and preparing document-processing
  * workspaces.
- * <p>
+ * <br/>
  * A workspace contains one supported spreadsheet workbook, the source PDF
  * documents discovered recursively beneath the selected directory, and the
  * output directories used for individual expedients and lot-wide consolidated

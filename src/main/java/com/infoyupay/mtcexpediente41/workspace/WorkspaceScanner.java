@@ -135,9 +135,9 @@ public final class WorkspaceScanner {
                          * @return visit instruction for the current directory
                          */
                         @Override
-                        public FileVisitResult preVisitDirectory(
-                                Path directory,
-                                BasicFileAttributes attributes) {
+                        public @NotNull FileVisitResult preVisitDirectory(
+                                @NotNull Path directory,
+                                @NotNull BasicFileAttributes attributes) {
                             if (directory.startsWith(outputDirectory)) {
                                 return FileVisitResult.SKIP_SUBTREE;
                             }
@@ -153,9 +153,9 @@ public final class WorkspaceScanner {
                          * @return instruction to continue traversal
                          */
                         @Override
-                        public FileVisitResult visitFile(
-                                Path file,
-                                BasicFileAttributes attributes) {
+                        public @NotNull FileVisitResult visitFile(
+                                @NotNull Path file,
+                                @NotNull BasicFileAttributes attributes) {
                             if (attributes.isRegularFile()) {
                                 sourceFiles.add(file);
                             }
