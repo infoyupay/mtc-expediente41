@@ -58,6 +58,8 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:6.1.1"))
     // Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter
     testImplementation("org.junit.jupiter:junit-jupiter")
+    // Source: https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     // Source: https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation("org.assertj:assertj-core:3.27.7")
 }
