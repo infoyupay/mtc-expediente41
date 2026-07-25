@@ -9,11 +9,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -54,18 +50,18 @@ public final class XlsxVehicleIdentifierReader {
     ) throws IOException {
         Objects.requireNonNull(workbook, "workbook");
 
-        try (ZipFile zipFile = new ZipFile(workbook.toFile())) {
-            List<String> sharedStrings = readSharedStrings(zipFile);
-            Map<String, String> relationships =
+        try (var zipFile = new ZipFile(workbook.toFile())) {
+            var sharedStrings = readSharedStrings(zipFile);
+            var relationships =
                     readWorkbookRelationships(zipFile);
-            List<WorksheetReference> worksheets =
+            var worksheets =
                     readWorksheetReferences(zipFile);
 
             List<SheetVehicleIdentifier> result =
                     new ArrayList<>(worksheets.size());
 
-            for (WorksheetReference worksheet : worksheets) {
-                String relationshipTarget =
+            for (var worksheet : worksheets) {
+                var relationshipTarget =
                         relationships.get(worksheet.relationshipId());
 
                 if (relationshipTarget == null) {
@@ -74,10 +70,10 @@ public final class XlsxVehicleIdentifierReader {
                                     .formatted(worksheet.name()));
                 }
 
-                String worksheetEntry =
+                var worksheetEntry =
                         resolveWorksheetEntry(relationshipTarget);
 
-                String identifier = readCellValue(
+                var identifier = readCellValue(
                         zipFile,
                         worksheetEntry,
                         TARGET_CELL,
@@ -102,23 +98,23 @@ public final class XlsxVehicleIdentifierReader {
     private List<WorksheetReference> readWorksheetReferences(
             ZipFile zipFile
     ) throws IOException {
-        ZipEntry entry = requireEntry(zipFile, WORKBOOK_ENTRY);
+        var entry = requireEntry(zipFile, WORKBOOK_ENTRY);
         List<WorksheetReference> result = new ArrayList<>();
 
-        try (InputStream input = zipFile.getInputStream(entry)) {
-            XMLStreamReader reader = newXmlReader(input);
+        try (var input = zipFile.getInputStream(entry)) {
+            var reader = newXmlReader(input);
 
             try {
                 while (reader.hasNext()) {
-                    int event = reader.next();
+                    var event = reader.next();
 
                     if (event != XMLStreamConstants.START_ELEMENT
                             || !"sheet".equals(reader.getLocalName())) {
                         continue;
                     }
 
-                    String name = reader.getAttributeValue(null, "name");
-                    String relationshipId = reader.getAttributeValue(
+                    var name = reader.getAttributeValue(null, "name");
+                    var relationshipId = reader.getAttributeValue(
                             RELATIONSHIPS_NAMESPACE,
                             "id");
 
@@ -154,18 +150,18 @@ public final class XlsxVehicleIdentifierReader {
     private Map<String, String> readWorkbookRelationships(
             ZipFile zipFile
     ) throws IOException {
-        ZipEntry entry = requireEntry(
+        var entry = requireEntry(
                 zipFile,
                 WORKBOOK_RELATIONSHIPS_ENTRY);
 
         Map<String, String> result = new HashMap<>();
 
-        try (InputStream input = zipFile.getInputStream(entry)) {
-            XMLStreamReader reader = newXmlReader(input);
+        try (var input = zipFile.getInputStream(entry)) {
+            var reader = newXmlReader(input);
 
             try {
                 while (reader.hasNext()) {
-                    int event = reader.next();
+                    var event = reader.next();
 
                     if (event != XMLStreamConstants.START_ELEMENT
                             || !"Relationship".equals(
@@ -173,8 +169,8 @@ public final class XlsxVehicleIdentifierReader {
                         continue;
                     }
 
-                    String id = reader.getAttributeValue(null, "Id");
-                    String target =
+                    var id = reader.getAttributeValue(null, "Id");
+                    var target =
                             reader.getAttributeValue(null, "Target");
 
                     if (id != null && target != null) {
@@ -204,7 +200,7 @@ public final class XlsxVehicleIdentifierReader {
     private List<String> readSharedStrings(
             ZipFile zipFile
     ) throws IOException {
-        ZipEntry entry = zipFile.getEntry(SHARED_STRINGS_ENTRY);
+        var entry = zipFile.getEntry(SHARED_STRINGS_ENTRY);
 
         if (entry == null) {
             return List.of();
@@ -212,14 +208,14 @@ public final class XlsxVehicleIdentifierReader {
 
         List<String> result = new ArrayList<>();
 
-        try (InputStream input = zipFile.getInputStream(entry)) {
-            XMLStreamReader reader = newXmlReader(input);
+        try (var input = zipFile.getInputStream(entry)) {
+            var reader = newXmlReader(input);
 
             try {
                 StringBuilder currentString = null;
 
                 while (reader.hasNext()) {
-                    int event = reader.next();
+                    var event = reader.next();
 
                     if (event == XMLStreamConstants.START_ELEMENT
                             && "si".equals(reader.getLocalName())) {
@@ -251,10 +247,10 @@ public final class XlsxVehicleIdentifierReader {
     /**
      * Reads one cell value from a worksheet.
      *
-     * @param zipFile open XLSX package
+     * @param zipFile        open XLSX package
      * @param worksheetEntry worksheet ZIP entry
-     * @param cellReference requested cell reference
-     * @param sharedStrings workbook shared strings
+     * @param cellReference  requested cell reference
+     * @param sharedStrings  workbook shared strings
      * @return stored cell value, or an empty string if the cell is absent
      * @throws IOException if the worksheet cannot be parsed
      */
@@ -264,28 +260,28 @@ public final class XlsxVehicleIdentifierReader {
             @SuppressWarnings("SameParameterValue") String cellReference,
             List<String> sharedStrings
     ) throws IOException {
-        ZipEntry entry = requireEntry(zipFile, worksheetEntry);
+        var entry = requireEntry(zipFile, worksheetEntry);
 
-        try (InputStream input = zipFile.getInputStream(entry)) {
-            XMLStreamReader reader = newXmlReader(input);
+        try (var input = zipFile.getInputStream(entry)) {
+            var reader = newXmlReader(input);
 
             try {
                 while (reader.hasNext()) {
-                    int event = reader.next();
+                    var event = reader.next();
 
                     if (event != XMLStreamConstants.START_ELEMENT
                             || !"c".equals(reader.getLocalName())) {
                         continue;
                     }
 
-                    String reference =
+                    var reference =
                             reader.getAttributeValue(null, "r");
 
                     if (!cellReference.equals(reference)) {
                         continue;
                     }
 
-                    String type =
+                    var type =
                             reader.getAttributeValue(null, "t");
 
                     return readCurrentCellValue(
@@ -309,23 +305,23 @@ public final class XlsxVehicleIdentifierReader {
      * Reads the content of the cell on which the reader is currently
      * positioned.
      *
-     * @param reader worksheet XML reader
-     * @param cellType XLSX cell type
+     * @param reader        worksheet XML reader
+     * @param cellType      XLSX cell type
      * @param sharedStrings workbook shared strings
      * @return decoded cell value
      * @throws XMLStreamException if the XML stream cannot be read
-     * @throws IOException if the cell contains an invalid shared-string index
+     * @throws IOException        if the cell contains an invalid shared-string index
      */
     private String readCurrentCellValue(
             XMLStreamReader reader,
             String cellType,
             List<String> sharedStrings
     ) throws XMLStreamException, IOException {
-        String rawValue = "";
-        StringBuilder inlineValue = new StringBuilder();
+        var rawValue = "";
+        var inlineValue = new StringBuilder();
 
         while (reader.hasNext()) {
-            int event = reader.next();
+            var event = reader.next();
 
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if ("v".equals(reader.getLocalName())) {
@@ -353,7 +349,7 @@ public final class XlsxVehicleIdentifierReader {
     /**
      * Resolves a value from the shared-string table.
      *
-     * @param rawIndex textual shared-string index
+     * @param rawIndex      textual shared-string index
      * @param sharedStrings workbook shared strings
      * @return resolved string
      * @throws IOException if the index is absent or invalid
@@ -363,7 +359,7 @@ public final class XlsxVehicleIdentifierReader {
             List<String> sharedStrings
     ) throws IOException {
         try {
-            int index = Integer.parseInt(rawIndex);
+            var index = Integer.parseInt(rawIndex);
 
             if (index < 0 || index >= sharedStrings.size()) {
                 throw new IOException(
@@ -385,7 +381,7 @@ public final class XlsxVehicleIdentifierReader {
      * @return normalized ZIP entry path
      */
     private String resolveWorksheetEntry(String target) {
-        String normalized = target.replace('\\', '/');
+        var normalized = target.replace('\\', '/');
 
         if (normalized.startsWith("/")) {
             return normalized.substring(1);
@@ -405,7 +401,7 @@ public final class XlsxVehicleIdentifierReader {
     /**
      * Obtains a required entry from the XLSX ZIP package.
      *
-     * @param zipFile open XLSX package
+     * @param zipFile   open XLSX package
      * @param entryName required entry name
      * @return matching ZIP entry
      * @throws IOException if the entry does not exist
@@ -414,7 +410,7 @@ public final class XlsxVehicleIdentifierReader {
             ZipFile zipFile,
             String entryName
     ) throws IOException {
-        ZipEntry entry = zipFile.getEntry(entryName);
+        var entry = zipFile.getEntry(entryName);
 
         if (entry == null) {
             throw new IOException(
@@ -434,7 +430,7 @@ public final class XlsxVehicleIdentifierReader {
     private XMLStreamReader newXmlReader(
             InputStream input
     ) throws IOException {
-        XMLInputFactory factory = XMLInputFactory.newFactory();
+        var factory = XMLInputFactory.newFactory();
 
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
         factory.setProperty(
@@ -464,7 +460,7 @@ public final class XlsxVehicleIdentifierReader {
     /**
      * Identifies a worksheet through its name and workbook relationship.
      *
-     * @param name worksheet display name
+     * @param name           worksheet display name
      * @param relationshipId workbook relationship identifier
      */
     private record WorksheetReference(
