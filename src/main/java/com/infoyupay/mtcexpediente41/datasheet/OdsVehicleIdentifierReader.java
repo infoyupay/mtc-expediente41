@@ -22,7 +22,7 @@ import java.util.zip.ZipFile;
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
  */
-public final class OdsVehicleIdentifierReader {
+public final class OdsVehicleIdentifierReader implements VehicleIdentifierReader {
 
     private static final String CONTENT_XML = "content.xml";
 

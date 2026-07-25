@@ -24,7 +24,7 @@ import java.util.zip.ZipFile;
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
  */
-public final class XlsxVehicleIdentifierReader {
+public final class XlsxVehicleIdentifierReader implements VehicleIdentifierReader {
 
     private static final String TARGET_CELL = "C13";
 
