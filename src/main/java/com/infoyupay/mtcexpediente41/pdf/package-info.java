@@ -2,7 +2,7 @@
  * Provides models and parsers for source PDF documents whose deterministic
  * file names identify their group, document number, and optional vehicle
  * marker.
- * <p>
+ * <br/>
  * Group brochures are shared by every vehicle in their group and therefore do
  * not carry a marker. Vehicle documents carry a four-digit marker and can be
  * selected and ordered by group and marker when producing consolidated files
