@@ -23,7 +23,10 @@ tasks.withType<JavaCompile> {
 
 application {
     mainModule.set("mtc.expediente41s")
-    mainClass.set("com.infoyupay.mtcexpediente41.HelloApplication")
+    mainClass.set("com.infoyupay.mtcexpediente41.Launcher")
+    applicationDefaultJvmArgs = listOf(
+        "--enable-native-access=javafx.graphics"
+    )
 }
 
 javafx {

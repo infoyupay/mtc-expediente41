@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import com.infoyupay.mtcexpediente41.javafx.treetable.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.Scene?>
+<Scene xmlns="http://javafx.com/javafx/"
+       xmlns:fx="http://javafx.com/fxml/1"
+       fx:controller="com.infoyupay.mtcexpediente41.javafx.fxml.MainSceneController">
+    <BorderPane minHeight="-Infinity" minWidth="-Infinity"
+                prefHeight="600.0" prefWidth="600.0">
+        <center>
+            <VBox alignment="CENTER">
+                <TreeTableView
+                        showRoot="false"
+                        fx:id="tblWorkspace"
+                        maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+                        VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TreeTableColumn prefWidth="50.0" text="Grupo">
+                            <cellValueFactory>
+                                <TreeTableVehicleValues fx:factory="group"/>
+                            </cellValueFactory>
+                        </TreeTableColumn>
+                        <TreeTableColumn prefWidth="150.0" text="Brochure">
+                            <cellValueFactory>
+                                <TreeTableVehicleValues fx:factory="brochure"/>
+                            </cellValueFactory>
+                            <cellFactory>
+                                <ReadOnlyTreeTablePathCell fx:factory="forTreeTableColumn"/>
+                            </cellFactory>
+                        </TreeTableColumn>
+                        <TreeTableColumn prefWidth="175.0" text="VIN">
+                            <cellValueFactory>
+                                <TreeTableVehicleValues fx:factory="vin"/>
+                            </cellValueFactory>
+                        </TreeTableColumn>
+                        <TreeTableColumn prefWidth="75.0" text="Documento">
+                            <columns>
+                                <TreeTableColumn prefWidth="50.0" text="Nro.">
+                                    <cellValueFactory>
+                                        <TreeTableVehicleValues fx:factory="document"/>
+                                    </cellValueFactory>
+                                </TreeTableColumn>
+                                <TreeTableColumn prefWidth="150.0" text="Archivo PDF">
+                                    <cellValueFactory>
+                                        <TreeTableVehicleValues fx:factory="pdf"/>
+                                    </cellValueFactory>
+                                    <cellFactory>
+                                        <ReadOnlyTreeTablePathCell fx:factory="forTreeTableColumn"/>
+                                    </cellFactory>
+                                </TreeTableColumn>
+                            </columns>
+                        </TreeTableColumn>
+                    </columns>
+                    <placeholder>
+                        <VBox spacing="5">
+                            <Label
+                                    text="Sin workspace, arrastre su workspace a esta área..."
+                                    minHeight="-Infinity" maxHeight="-Infinity" prefHeight="32"/>
+                            <Hyperlink
+                                    text="O selecicone un workspace"
+                                    onAction="#handleWorkspaceSelection"
+                                    visited="${false}"
+                                    minHeight="-Infinity" maxHeight="-Infinity" prefHeight="32"/>
+                        </VBox>
+                    </placeholder>
+                </TreeTableView>
+            </VBox>
+        </center>
+        <top>
+            <VBox BorderPane.alignment="CENTER">
+                <MenuBar VBox.vgrow="NEVER">
+                    <Menu mnemonicParsing="false" text="File">
+                        <MenuItem mnemonicParsing="false" text="Close"/>
+                    </Menu>
+                    <Menu mnemonicParsing="false" text="Edit">
+                        <MenuItem mnemonicParsing="false" text="Delete"/>
+                    </Menu>
+                    <Menu mnemonicParsing="false" text="Help">
+                        <MenuItem mnemonicParsing="false" text="About"/>
+                    </Menu>
+                </MenuBar>
+                <ToolBar VBox.vgrow="NEVER">
+                    <Button mnemonicParsing="false" text="+"/>
+                </ToolBar>
+                <Label maxHeight="-Infinity" minHeight="-Infinity" prefHeight="32.0"
+                       maxWidth="1.7976931348623157E308"
+                       text="Lote: %d vehículos identificados / %d grupos detectados">
+                    <padding>
+                        <Insets left="5.0" right="5.0"/>
+                    </padding>
+                </Label>
+            </VBox>
+        </top>
+    </BorderPane>
+</Scene>

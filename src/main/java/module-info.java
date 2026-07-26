@@ -32,4 +32,6 @@ module mtc.expediente41s {
     opens com.infoyupay.mtcexpediente41 to javafx.fxml;
     //Exports entry point.
     exports com.infoyupay.mtcexpediente41;
+    opens com.infoyupay.mtcexpediente41.javafx.fxml to javafx.fxml, javafx.graphics;
+    opens com.infoyupay.mtcexpediente41.javafx.treetable to javafx.fxml, javafx.graphics;
 }
