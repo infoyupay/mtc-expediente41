@@ -31,7 +31,7 @@ Expediente41 removes this problem by producing a **single consolidated PDF** for
 The application performs the following steps:
 
 1. Reads an Excel workbook containing the processing batch.
-2. Extracts the VIN from cell **C12** of every worksheet.
+2. Extracts the VIN from cell **C13** of every worksheet.
 3. Uses the last four VIN characters as a document identifier.
 4. Scans a local directory containing all PDF files.
 5. Determines the vehicle group from the document naming convention.
