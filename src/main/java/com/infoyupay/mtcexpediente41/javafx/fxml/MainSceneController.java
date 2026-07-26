@@ -12,11 +12,42 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
 
+/**
+ * Controls the main workspace scene.
+ * <br/>
+ * The current controller presents the initial {@link TreeTableView} skeleton
+ * and a proof-of-concept hierarchy that demonstrates the intended group,
+ * vehicle, and document levels.
+ *
+ * @author David Vidal - InfoYupay SACS
+ * @version 1.0
+ */
 public final class MainSceneController {
-    private static final String FXML = "/com/infoyupay/mtcexpediente41/javafx/fxml/main-scene.fxml";
+
+    /**
+     * Classpath location of the main scene FXML resource.
+     */
+    private static final String FXML =
+            "/com/infoyupay/mtcexpediente41/javafx/fxml/main-scene.fxml";
+
     @FXML
     private TreeTableView<TreeTableVehicle> tblWorkspace;
 
+    /**
+     * Creates a main scene controller.
+     * <br/>
+     * This constructor intentionally performs no UI initialization because
+     * FXML fields are injected after controller construction.
+     */
+    public MainSceneController() {
+    }
+
+    /**
+     * Loads the main scene and its controller from FXML.
+     *
+     * @return loaded scene and associated controller
+     * @throws IOException if the FXML resource cannot be loaded
+     */
     public static MainScene fromFxml() throws IOException {
         var resource = MainSceneController
                 .class
@@ -29,6 +60,12 @@ public final class MainSceneController {
         return new MainScene(loader.getRoot(), loader.getController());
     }
 
+    /**
+     * Populates the workspace tree with proof-of-concept data after a
+     * workspace-selection request.
+     *
+     * @param actionEvent event raised by the workspace selection control
+     */
     @FXML
     private void handleWorkspaceSelection(ActionEvent actionEvent) {
         //Proof of concept. TODO: implement real stuff.
@@ -95,6 +132,11 @@ public final class MainSceneController {
         expandAll(fake);
     }
 
+    /**
+     * Recursively expands one tree item and all of its descendants.
+     *
+     * @param root root of the subtree to expand, or {@code null}
+     */
     private void expandAll(TreeItem<TreeTableVehicle> root) {
         if (root == null) return;
         root.setExpanded(true);
@@ -105,8 +147,15 @@ public final class MainSceneController {
         }
     }
 
+    /**
+     * Represents a loaded main scene and its controller.
+     *
+     * @param root loaded JavaFX scene
+     * @param controller controller associated with the scene
+     *
+     * @author David Vidal - InfoYupay SACS
+     * @version 1.0
+     */
     public record MainScene(Scene root, MainSceneController controller) {
     }
-
-
 }
