@@ -97,14 +97,17 @@ public abstract class OnlyDirectoryDropHandler implements EventHandler<DragEvent
      * @param event drop event to complete
      */
     private void dragDropped(DragEvent event) {
-        if (lastDraggedDirectory != null) {
-            pathDropped(lastDraggedDirectory);
-            event.setDropCompleted(true);
-        } else {
-            event.setDropCompleted(false);
+        try {
+            if (lastDraggedDirectory != null) {
+                pathDropped(lastDraggedDirectory);
+                event.setDropCompleted(true);
+            } else {
+                event.setDropCompleted(false);
+            }
+        } finally {
+            activeGesture = false;
+            lastDraggedDirectory = null;
         }
-        activeGesture = false;
-        lastDraggedDirectory = null;
     }
 
     /**
