@@ -8,6 +8,7 @@ import com.infoyupay.mtcexpediente41.javafx.treetable.TreeTableVehicle;
 import com.infoyupay.mtcexpediente41.pdf.GroupPdfDocument;
 import com.infoyupay.mtcexpediente41.pdf.PdfDocumentNameException;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -306,6 +307,11 @@ public final class MainSceneController {
      */
     public void setPrimaryStage(Stage primaryStage) {
         this.primaryStage = primaryStage;
+    }
+
+    @FXML
+    private void handleGenerate() {
+
     }
 
     /**

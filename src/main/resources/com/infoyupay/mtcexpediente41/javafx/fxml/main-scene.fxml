@@ -89,7 +89,8 @@
                                   mnemonicParsing="false"
                                   onAction="#handleClean"/>
                         <MenuItem text="Generar"
-                                  mnemonicParsing="false"/>
+                                  mnemonicParsing="false"
+                                  onAction="#handleGenerate"/>
                     </Menu>
                     <Menu text="Ayuda"
                           mnemonicParsing="false">
