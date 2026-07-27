@@ -69,9 +69,15 @@ public final class MainSceneController {
         return new MainScene(loader.getRoot(), loader.getController());
     }
 
+    /**
+     * Initializes drag-and-drop support after the FXML controls have been injected.
+     */
     @FXML
     private void initialize() {
         tblWorkspace.addEventHandler(DragEvent.ANY, new OnlyDirectoryDropHandler() {
+            /**
+             * {@inheritDoc}
+             */
             @Override
             protected void pathDropped(Path path) {
                 //TODO: implement real stuff.
@@ -169,6 +175,9 @@ public final class MainSceneController {
         }
     }
 
+    /**
+     * Requests confirmation and exits the application when the user accepts.
+     */
     @FXML
     private void handleExit() {
         var alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -180,17 +189,28 @@ public final class MainSceneController {
                 .ifPresent(_ -> Platform.exit());
     }
 
+    /**
+     * Clears the loaded workspace hierarchy and the active VIN filter.
+     */
     @FXML
     private void handleClean() {
         tblWorkspace.setRoot(null);
         txtFilter.clear();
     }
 
+    /**
+     * Clears the VIN filter text.
+     */
     @FXML
     private void handleCleanFilter() {
         txtFilter.clear();
     }
 
+    /**
+     * Opens a directory chooser for selecting a workspace.
+     *
+     * @return the selected directory path, or an empty optional when cancelled
+     */
     private Optional<Path> chooseDir() {
         var chooser = new DirectoryChooser();
         chooser.setTitle("Abrir workspace...");
