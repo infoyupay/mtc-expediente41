@@ -343,32 +343,41 @@ public final class MainSceneController {
     }
 
     /**
-     * FX Accessor - getter.
+     * Returns the workspace analysis currently presented by this controller.
      *
-     * @return value of {@link #analysisProperty()}.get();
+     * @return the active workspace analysis, or {@code null} when no workspace
+     *         is loaded
      */
     public WorkspaceAnalysis getAnalysis() {
         return analysis.get();
     }
 
     /**
-     * FX Accessor - setter.
+     * Replaces the workspace analysis currently presented by this controller.
      *
-     * @param analysis value to assign into {@link #analysisProperty()}.
+     * @param analysis workspace analysis to retain, or {@code null} to clear
+     *                 the active analysis
      */
     public void setAnalysis(WorkspaceAnalysis analysis) {
         this.analysis.set(analysis);
     }
 
     /**
-     * TODO: write documentation.
+     * Returns the observable property that stores the active workspace analysis.
      *
-     * @return javaFX Property.
+     * @return the active workspace analysis property
      */
     public ObjectProperty<WorkspaceAnalysis> analysisProperty() {
         return analysis;
     }
 
+    /**
+     * Copies the group and VIN mapping from the active workspace analysis to
+     * the system clipboard as tab-separated plain text.
+     * <br/>
+     * Each vehicle is written on a separate line. No clipboard content is
+     * produced when the workspace has not been loaded or cannot proceed.
+     */
     @FXML
     private void handleCopy() {
         var currentAnalysis = getAnalysis();
