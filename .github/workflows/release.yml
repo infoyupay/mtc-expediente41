@@ -1,0 +1,134 @@
+name: Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version without the v prefix (for example, 1.0.0)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-\${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate version
+    runs-on: ubuntu-latest
+    outputs:
+      version: \${{ steps.version.outputs.version }}
+      tag: \${{ steps.version.outputs.tag }}
+    steps:
+      - name: Validate release version
+        id: version
+        env:
+          VERSION: \${{ inputs.version }}
+        shell: bash
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+([.][0-9]+){1,2}$ ]]; then
+            echo "::error::Version must contain two or three numeric components, for example 1.0 or 1.0.0."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+  package:
+    name: Package \${{ matrix.platform }}
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Linux
+            runner: ubuntu-latest
+            installer_type: deb
+            extension: deb
+            artifact_suffix: linux-x64
+          - platform: Windows
+            runner: windows-latest
+            installer_type: exe
+            extension: exe
+            artifact_suffix: windows-x64
+          - platform: macOS
+            runner: macos-15-intel
+            installer_type: dmg
+            extension: dmg
+            artifact_suffix: macos-x64
+    runs-on: \${{ matrix.runner }}
+    steps:
+      - name: Check out agents/gpt
+        uses: actions/checkout@v4
+
+      - name: Set up Java 26
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "26"
+          cache: gradle
+
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install --yes fakeroot
+
+      - name: Build native installer
+        env:
+          VERSION: \${{ needs.validate.outputs.version }}
+          INSTALLER_TYPE: \${{ matrix.installer_type }}
+        shell: bash
+        run: |
+          ./gradlew clean jpackage \
+            -PreleaseVersion="$VERSION" \
+            -PinstallerType="$INSTALLER_TYPE" \
+            --no-daemon
+
+      - name: Prepare release asset
+        env:
+          VERSION: \${{ needs.validate.outputs.version }}
+          EXTENSION: \${{ matrix.extension }}
+          ARTIFACT_SUFFIX: \${{ matrix.artifact_suffix }}
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          installer="$(find build/jpackage -maxdepth 1 -type f -name "*.$EXTENSION" -print -quit)"
+          if [[ -z "$installer" ]]; then
+            echo "::error::No .$EXTENSION installer was produced in build/jpackage."
+            find build/jpackage -maxdepth 2 -print || true
+            exit 1
+          fi
+          cp "$installer" "release-assets/Expediente41-$VERSION-$ARTIFACT_SUFFIX.$EXTENSION"
+
+      - name: Upload native installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Expediente41-\${{ matrix.artifact_suffix }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Publish GitHub Release
+    needs:
+      - validate
+      - package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download native installers
+        uses: actions/download-artifact@v5
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: \${{ needs.validate.outputs.tag }}
+          name: Expediente41 \${{ needs.validate.outputs.version }}
+          target_commitish: \${{ github.sha }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: release-assets/*
