@@ -14,6 +14,7 @@ module mtc.expediente41s {
      *==========*/
     requires org.slf4j;
     requires ch.qos.logback.core;
+    requires org.apache.commons.logging;
 
     /*==============*
      * JDK modules. *
