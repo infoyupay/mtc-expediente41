@@ -12,9 +12,10 @@ public final class PdfDocumentNameException extends Exception {
     private final String fileName;
 
     /**
-     * Creates an exception with a descriptive message.
+     * Creates an exception for the source PDF whose file name is inconsistent.
      *
-     * @param message exception message
+     * @param fileName name of the source PDF that caused the exception
+     * @param message  exception message
      */
     public PdfDocumentNameException(String fileName, String message) {
         super(message);
@@ -22,16 +23,23 @@ public final class PdfDocumentNameException extends Exception {
     }
 
     /**
-     * Creates an exception with a descriptive message and root cause.
+     * Creates an exception for the source PDF whose file name is inconsistent,
+     * preserving the root cause.
      *
-     * @param message exception message
-     * @param cause   root cause
+     * @param fileName name of the source PDF that caused the exception
+     * @param message  exception message
+     * @param cause    root cause
      */
     public PdfDocumentNameException(String fileName, String message, Throwable cause) {
         super(message, cause);
         this.fileName = fileName;
     }
 
+    /**
+     * Returns the name of the source PDF that caused this exception.
+     *
+     * @return offending source PDF file name
+     */
     public String getFileName() {
         return fileName;
     }
