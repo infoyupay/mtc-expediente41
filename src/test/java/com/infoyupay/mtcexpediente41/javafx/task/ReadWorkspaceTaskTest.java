@@ -1,5 +1,6 @@
 package com.infoyupay.mtcexpediente41.javafx.task;
 
+import com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysis;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -112,13 +113,12 @@ class ReadWorkspaceTaskTest {
      * @param workbookFileName expected workbook file name
      */
     private static void assertSuccessfulAnalysis(
-            com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysis analysis,
+            WorkspaceAnalysis analysis,
             String workbookFileName) {
         assertThat(analysis.canProceed()).isTrue();
         assertThat(analysis.vehicleCount()).isEqualTo(VEHICLE_MARKERS.size());
         assertThat(analysis.groupCount()).isEqualTo(1);
-        assertThat(analysis.workspace().workbook())
-                .extracting(path -> path.getFileName().toString())
+        assertThat(analysis.workspace().workbook().getFileName().toString())
                 .isEqualTo(workbookFileName);
         assertThat(analysis.groups())
                 .singleElement()
