@@ -20,6 +20,12 @@ module mtc.expediente41s {
      *==============*/
     requires java.xml;
 
+    /*===================*
+     * PDF manipulation. *
+     *===================*/
+    requires org.apache.pdfbox;
+    requires org.apache.pdfbox.io;
+
     /*=================*
      * JavaFX modules. *
      *=================*/
