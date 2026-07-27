@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: release-\${{ inputs.version }}
+  group: release-${{ inputs.version }}
   cancel-in-progress: false
 
 jobs:
@@ -20,13 +20,13 @@ jobs:
     name: Validate version
     runs-on: ubuntu-latest
     outputs:
-      version: \${{ steps.version.outputs.version }}
-      tag: \${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - name: Validate release version
         id: version
         env:
-          VERSION: \${{ inputs.version }}
+          VERSION: ${{ inputs.version }}
         shell: bash
         run: |
           if [[ ! "$VERSION" =~ ^[0-9]+([.][0-9]+){1,2}$ ]]; then
@@ -37,7 +37,7 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
   package:
-    name: Package \${{ matrix.platform }}
+    name: Package ${{ matrix.platform }}
     needs: validate
     strategy:
       fail-fast: false
@@ -58,7 +58,7 @@ jobs:
             installer_type: dmg
             extension: dmg
             artifact_suffix: macos-x64
-    runs-on: \${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Check out agents/gpt
         uses: actions/checkout@v4
@@ -77,8 +77,8 @@ jobs:
 
       - name: Build native installer
         env:
-          VERSION: \${{ needs.validate.outputs.version }}
-          INSTALLER_TYPE: \${{ matrix.installer_type }}
+          VERSION: ${{ needs.validate.outputs.version }}
+          INSTALLER_TYPE: ${{ matrix.installer_type }}
         shell: bash
         run: |
           ./gradlew clean jpackage \
@@ -88,9 +88,9 @@ jobs:
 
       - name: Prepare release asset
         env:
-          VERSION: \${{ needs.validate.outputs.version }}
-          EXTENSION: \${{ matrix.extension }}
-          ARTIFACT_SUFFIX: \${{ matrix.artifact_suffix }}
+          VERSION: ${{ needs.validate.outputs.version }}
+          EXTENSION: ${{ matrix.extension }}
+          ARTIFACT_SUFFIX: ${{ matrix.artifact_suffix }}
         shell: bash
         run: |
           mkdir -p release-assets
@@ -105,7 +105,7 @@ jobs:
       - name: Upload native installer
         uses: actions/upload-artifact@v4
         with:
-          name: Expediente41-\${{ matrix.artifact_suffix }}
+          name: Expediente41-${{ matrix.artifact_suffix }}
           path: release-assets/*
           if-no-files-found: error
           retention-days: 7
@@ -126,9 +126,9 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: \${{ needs.validate.outputs.tag }}
-          name: Expediente41 \${{ needs.validate.outputs.version }}
-          target_commitish: \${{ github.sha }}
+          tag_name: ${{ needs.validate.outputs.tag }}
+          name: Expediente41 ${{ needs.validate.outputs.version }}
+          target_commitish: ${{ github.sha }}
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: release-assets/*
