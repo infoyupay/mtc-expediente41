@@ -27,6 +27,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for {@link WorkspacePdfWriter}.
+ *  <div data-infoyupay="manual-test-verification"
+ *    style="border:1px solid #c00;
+ *    border-radius:2px;
+ *    padding:4px;
+ *    color:#c00;
+ *    margin-top:6px;
+ *    margin-bottom:6px;">
+ *       <strong>Tested-by:</strong>
+ *       dvidal@infoyupay.com - passed 1 tests in 5.765s at 2026-07-27T13:29:49 (UTC-5).
+ * </div>
  *
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
