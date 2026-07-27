@@ -6,7 +6,9 @@ plugins {
 }
 
 group = "com.infoyupay"
-version = "1.0-SNAPSHOT"
+version = providers.gradleProperty("releaseVersion")
+    .orElse("1.0-SNAPSHOT")
+    .get()
 
 repositories {
     mavenCentral()
@@ -50,6 +52,7 @@ jlink {
         imageName = "Expediente41"
         installerName = "Expediente41"
         appVersion = project.version.toString().substringBefore('-')
+        installerType = providers.gradleProperty("installerType").orNull
         vendor = "InfoYupay SACS"
         imageOptions = listOf(
             "--description",
