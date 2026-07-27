@@ -1,66 +1,70 @@
 # Expediente41
 
-Expediente41 is a lightweight desktop utility developed for **VERICAR Perú** to automate the preparation of document packages for the **DSTT-041** procedure submitted to the Peruvian Ministry of Transport and Communications (MTC).
+Expediente41 is a lightweight desktop utility developed for **VERICAR Perú**.
+It prepares the PDF document packages used in the **DSTT-041** procedure before
+the Peruvian Ministry of Transport and Communications (MTC).
 
-The application eliminates a repetitive and error-prone manual process by generating a single PDF package for each vehicle, ready to be uploaded to the MTC platform.
+The application reads the vehicle identifiers from a spreadsheet, correlates
+them with deterministically named PDF files, validates the complete batch, and
+generates both the individual vehicle expedientes and the lot-wide consolidated
+documents.
 
----
+## Preparing a workspace
 
-## Motivation
+Create or choose a directory to use as the workspace. The application must have
+read and write access to that directory.
 
-When processing a batch of vehicle approval requests, the MTC platform requires several documents to be uploaded individually.
+Place the following input files in it:
 
-For each vehicle, the operator typically has to upload:
+- Exactly one `.xlsx` or `.ods` workbook.
+- All source `.pdf` documents required by the batch.
 
-* Manufacturer brochure
-* Special vehicle characteristics
-* Technical specification sheet
-* Transfer order (when applicable)
-* Photographic panel (when applicable)
+The simplest arrangement is to put every input file directly in the same
+directory. Subdirectories are also scanned recursively, except for the
+`Expedientes` output directory created by the application.
 
-Because the platform discards the original file names after upload, operators must manually open the preview of every uploaded document to verify that it actually belongs to the intended VIN.
-
-This repetitive verification significantly increases processing time and creates opportunities for human error.
-
-Expediente41 removes this problem by producing a **single consolidated PDF** for every vehicle.
-
----
-
-## How It Works
-
-The application performs the following steps:
-
-1. Reads an Excel workbook containing the processing batch.
-2. Extracts the VIN from cell **C13** of every worksheet.
-3. Uses the last four VIN characters as a document identifier.
-4. Scans a local directory containing all PDF files.
-5. Determines the vehicle group from the document naming convention.
-6. Locates the common manufacturer brochure for that group.
-7. Concatenates all applicable documents into a single PDF.
-8. Produces a text mapping between VIN and group number.
-
----
-
-## Document Naming Convention
-
-The application relies on deterministic file names.
-
-```
-n.1*.pdf              Manufacturer brochure (shared by the entire group)
-n.2*xxxx.pdf          Special vehicle characteristics
-n.3*xxxx.pdf          Technical specification sheet
-n.4*xxxx.pdf          Transfer order (optional)
-n.5*xxxx.pdf          Photographic panel (optional)
-```
-
-Where:
-
-* **n** is the vehicle group assigned by the operator.
-* **xxxx** are the last four characters of the VIN.
+Each worksheet in the workbook represents one vehicle. Its complete VIN must be
+stored in cell **C13**. Expediente41 uses the final four characters of the VIN
+to match it with its PDF documents; those four characters must be digits.
 
 Example:
 
+```text
+LZZ5EL3D5RA124821
+             └── 4821
 ```
+
+Do not place two supported workbooks in the workspace. Expediente41 requires
+exactly one workbook and will reject an empty or ambiguous selection.
+
+## PDF naming convention
+
+Every source PDF name must begin with:
+
+```text
+group.document
+```
+
+Both values are positive integers separated by a dot:
+
+- Document `1` is the manufacturer brochure shared by the entire group.
+- Document `2` is the vehicle request.
+- Document `3` is the technical specification sheet.
+- Documents `4` and above are optional additional documents.
+
+The brochure does not carry a VIN marker. Every vehicle-specific document
+(`2` and above) must end with a space followed by the final four digits of the
+VIN.
+
+Recommended format:
+
+```text
+<group>.<document> <description> <last-four-VIN-digits>.pdf
+```
+
+Example for group `3` and a vehicle whose VIN ends in `4821`:
+
+```text
 3.1 Manufacturer Brochure.pdf
 3.2 Special Characteristics 4821.pdf
 3.3 Technical Sheet 4821.pdf
@@ -68,75 +72,97 @@ Example:
 3.5 Photographic Panel 4821.pdf
 ```
 
-For the VIN ending in **4821**, Expediente41 generates a single document containing:
+Descriptions are free text. The significant parts are the numeric
+`group.document` prefix and, for vehicle-specific documents, the four-digit
+marker immediately before `.pdf`. File suffix matching is case-insensitive.
 
-1. Manufacturer brochure
-2. Special vehicle characteristics
-3. Technical specification sheet
-4. Transfer order (if present)
-5. Photographic panel (if present)
+Each group must contain exactly one brochure. Every vehicle must contain
+documents `2` and `3`; document numbers must not be duplicated for the same
+vehicle and group.
 
----
+## Using the application
 
-## Validation
+1. Open Expediente41.
+2. Select the prepared workspace directory, or drag the directory onto the
+   workspace table.
+3. Review the detected groups, VINs, and documents.
+4. Correct any reported inconsistency and reload the workspace.
+5. Select **Generar** once the analysis is valid.
 
-Before generating any output, the application validates the document set.
+The application generates files only when the workbook and PDF inventory are
+internally consistent. Among other checks, it detects missing or duplicate
+brochures, missing mandatory documents, unknown or ambiguous VIN markers,
+vehicles assigned to multiple groups, duplicate document numbers, and workbook
+vehicles without PDFs.
 
-Checks include:
+## Generated output
 
-* VIN exists in every worksheet.
-* Mandatory documents are present.
-* All documents belonging to the same VIN reference the same group number.
-* The corresponding group brochure exists.
-* No conflicting document groups exist for a single VIN.
-* Documents that do not match any VIN are reported.
+Expediente41 creates the following structure inside the selected workspace:
 
-Generation proceeds only after the document set is internally consistent.
+```text
+Expedientes/
+├── Individuales/
+└── Consolidados/
+```
 
----
+### Individual expedientes
 
-## Output
+One file is created per VIN:
 
-For every vehicle, the application generates:
+```text
+Expedientes/Individuales/<VIN> verYYYY-MM-dd_HH-mm.pdf
+```
 
-* One consolidated PDF ready for upload to the MTC platform.
+Its contents are merged in this order:
 
-It also generates a VIN-to-group mapping, exported both as plain text and copied to the system clipboard.
+1. The group brochure (`n.1`).
+2. The vehicle request (`n.2`).
+3. The technical specification sheet (`n.3`).
+4. Any additional documents (`n.4+`) in ascending document-number order.
 
 Example:
 
-```
-LZZ5EL3D5RA123456    3
-LZZ5EL3D5RA123789    3
-LZZ5EL3D5RA987654    7
+```text
+Expedientes/Individuales/LZZ5EL3D5RA124821 ver2026-07-27_14-35.pdf
 ```
 
----
+### Consolidated documents
 
-## Design Goals
+Exactly two lot-wide files are created:
 
-* Zero database dependencies.
-* Local execution.
-* Deterministic processing.
-* Minimal user interaction.
-* Fast processing of large batches.
-* Reduced upload errors.
-* Fully reproducible output.
+```text
+Expedientes/Consolidados/Solicitudes consolidadas verYYYY-MM-dd_HH-mm.pdf
+Expedientes/Consolidados/Fichas técnicas consolidadas verYYYY-MM-dd_HH-mm.pdf
+```
 
----
+The first contains every `n.2` request and the second every `n.3` technical
+sheet, ordered by document group and vehicle marker. Their names intentionally
+do not retain any individual group identity.
 
-## Technology Stack
+All files produced by one generation share the same timestamp. Existing output
+files are never overwritten. Running generation twice within the same minute
+therefore reports a version collision; wait for the next minute or move the
+previous output before trying again.
 
-* Java
-* JavaFX
-* Apache POI
-* Apache PDFBox
-* Gradle
+## Design goals
 
----
+- Local execution with no database dependency.
+- Deterministic input validation and output ordering.
+- Minimal user interaction.
+- Reduced upload and vehicle-assignment errors.
+- Reproducible, timestamped output.
 
-## Project Name
+## Technology stack
 
-The project is named **Expediente41** because it automates the preparation of document packages for the **DSTT-041** administrative procedure before the Peruvian Ministry of Transport and Communications (MTC).
+- Java 26
+- JavaFX 26
+- JDK XML streaming and ZIP APIs
+- Apache PDFBox
+- Gradle
 
-The goal is not to automate the submission itself, but to streamline the document preparation stage, reducing processing time and minimizing the risk of attaching incorrect files.
+## Project name
+
+The project is named **Expediente41** because it automates the document
+preparation stage for the **DSTT-041** administrative procedure. It does not
+submit documents to the MTC platform; it produces the individual and
+consolidated PDF files that the operator will upload.

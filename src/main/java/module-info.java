@@ -1,7 +1,15 @@
 /**
- * Monolythic application module.
+ * Defines the monolithic Expediente41 desktop application module.
+ * <br/>
+ * The module assembles the JavaFX presentation layer, spreadsheet vehicle
+ * identification, source PDF analysis and validation, and PDFBox-based
+ * generation of individual and consolidated DSTT-041 expediente documents.
+ * Only the application entry-point package is exported; JavaFX-specific
+ * packages are opened exclusively to the modules that load their FXML and
+ * reflective presentation types.
  *
  * @author David Vidal - InfoYupay SACS
+ * @version 1.0
  */
 module mtc.expediente41s {
     /*=============*
