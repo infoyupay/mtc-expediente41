@@ -172,10 +172,21 @@ public final class MainSceneController {
 
     private ExecutorService ioExecutor;
 
+    /**
+     * Returns the executor used to run blocking input/output tasks.
+     *
+     * @return configured input/output executor, or {@code null} before it is
+     *         supplied by the application
+     */
     public ExecutorService getIoExecutor() {
         return ioExecutor;
     }
 
+    /**
+     * Sets the executor used to run blocking input/output tasks.
+     *
+     * @param ioExecutor executor supplied by the application
+     */
     public void setIoExecutor(ExecutorService ioExecutor) {
         this.ioExecutor = ioExecutor;
     }
