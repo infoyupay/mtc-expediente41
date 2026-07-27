@@ -52,7 +52,7 @@ jlink {
         imageName = "Expediente41"
         installerName = "Expediente41"
         appVersion = project.version.toString().substringBefore('-')
-        installerType = providers.gradleProperty("installerType").orNull
+        providers.gradleProperty("installerType").orNull?.let { installerType = it }
         vendor = "InfoYupay SACS"
         imageOptions = listOf(
             "--description",
