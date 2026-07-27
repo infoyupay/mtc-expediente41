@@ -40,11 +40,13 @@ public abstract class TaskMonitor extends Alert
         getButtonTypes().setAll(ButtonType.CLOSE);
         console = new TextArea();
         console.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        console.setPrefSize(600, 400);
+        console.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        console.setPrefSize(400, 300);
         console.setEditable(false);
         console.setFont(Font.font("Monospaced", 12));
         getDialogPane().setExpandableContent(console);
         getDialogPane().setExpanded(true);
+        getDialogPane().autosize();
     }
 
     /**

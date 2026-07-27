@@ -97,19 +97,7 @@
                                   mnemonicParsing="false"/>
                     </Menu>
                 </MenuBar>
-                <ToolBar VBox.vgrow="NEVER">
-                    <Label text="Buscar VIN:"
-                           styleClass="toolbar-items"/>
-                    <TextField fx:id="txtFilter"
-                               minWidth="300"
-                               styleClass="toolbar-items"/>
-                    <Button text="L"
-                            mnemonicParsing="false"
-                            styleClass="toolbar-button"
-                            onAction="#handleCleanFilter"/>
-                </ToolBar>
                 <Label fx:id="lblSummary"
-                       text="Lote: %d vehículos identificados / %d grupos detectados"
                        maxHeight="-Infinity" minHeight="-Infinity" prefHeight="32.0"
                        maxWidth="1.7976931348623157E308">
                     <padding>

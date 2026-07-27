@@ -81,12 +81,14 @@ public final class ReadWorkspaceTask extends Task<WorkspaceAnalysis> {
             throws WorkspaceException,
             IOException,
             PdfDocumentNameException {
+        updateMessage("Iniciando escaneo de espacio de trabajo...");
         var workspace = new WorkspaceScanner().scan(workspaceDirectory);
         var identifiers = readerFor(workspace.workbook())
                 .read(workspace.workbook());
+        updateMessage("Se detectaron " + identifiers.size() + " identificadores de vehículos.");
         var documents = new PdfDocumentParser()
                 .parseAll(workspace.pdfFiles());
-
+        updateMessage("Escaneo finalizado.");
         return new WorkspaceAnalyzer().analyze(
                 workspace,
                 identifiers,
