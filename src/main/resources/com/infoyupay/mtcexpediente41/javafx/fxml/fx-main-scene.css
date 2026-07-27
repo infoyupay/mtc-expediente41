@@ -1,0 +1,21 @@
+.toolbar-items {
+    -fx-min-height: 32px;
+    -fx-max-height: 32px;
+    -fx-pref-height: 32px;
+}
+
+.toolbar-button {
+    -fx-pref-height: 32px;
+    -fxpref-width: 32px;
+    -fx-min-height: 32px;
+    -fx-min-width: 32px;
+    -fx-max-height: 32px;
+    -fx-max-width: 32px;
+    -fx-border-radius: 16px;
+    -fx-border-style: none;
+    -fx-background-color: transparent;
+}
+
+.toolbar-button:hover {
+    -fx-border-style: dotted;
+}

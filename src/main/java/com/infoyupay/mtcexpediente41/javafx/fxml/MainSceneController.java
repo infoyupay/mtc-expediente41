@@ -1,16 +1,19 @@
 package com.infoyupay.mtcexpediente41.javafx.fxml;
 
 import com.infoyupay.mtcexpediente41.javafx.treetable.TreeTableVehicle;
-import javafx.event.ActionEvent;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableView;
+import javafx.scene.control.*;
+import javafx.scene.input.DragEvent;
+import javafx.stage.DirectoryChooser;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Controls the main workspace scene.
@@ -29,6 +32,12 @@ public final class MainSceneController {
      */
     private static final String FXML =
             "/com/infoyupay/mtcexpediente41/javafx/fxml/main-scene.fxml";
+
+    @FXML
+    private Label lblSummary;
+
+    @FXML
+    private TextField txtFilter;
 
     @FXML
     private TreeTableView<TreeTableVehicle> tblWorkspace;
@@ -60,14 +69,27 @@ public final class MainSceneController {
         return new MainScene(loader.getRoot(), loader.getController());
     }
 
+    @FXML
+    private void initialize() {
+        tblWorkspace.addEventHandler(DragEvent.ANY, new OnlyDirectoryDropHandler() {
+            @Override
+            protected void pathDropped(Path path) {
+                //TODO: implement real stuff.
+                if (path == null) {
+                    System.out.println("Path is null");
+                } else {
+                    System.out.printf("Exporting to %s%n", path);
+                }
+            }
+        });
+    }
+
     /**
      * Populates the workspace tree with proof-of-concept data after a
      * workspace-selection request.
-     *
-     * @param actionEvent event raised by the workspace selection control
      */
     @FXML
-    private void handleWorkspaceSelection(ActionEvent actionEvent) {
+    private void handleWorkspaceSelection() {
         //Proof of concept. TODO: implement real stuff.
         var fake = new TreeItem<>(new TreeTableVehicle());
         //Group 1
@@ -147,15 +169,45 @@ public final class MainSceneController {
         }
     }
 
+    @FXML
+    private void handleExit() {
+        var alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmación Requerida");
+        alert.setHeaderText("¿Está Seguro que desea salir de la app?");
+        alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        alert.showAndWait()
+                .filter(ButtonType.YES::equals)
+                .ifPresent(_ -> Platform.exit());
+    }
+
+    @FXML
+    private void handleClean() {
+        tblWorkspace.setRoot(null);
+        txtFilter.clear();
+    }
+
+    @FXML
+    private void handleCleanFilter() {
+        txtFilter.clear();
+    }
+
+    private Optional<Path> chooseDir() {
+        var chooser = new DirectoryChooser();
+        chooser.setTitle("Abrir workspace...");
+        return Optional.ofNullable(chooser.showDialog(null))
+                .map(File::toPath);
+    }
+
     /**
      * Represents a loaded main scene and its controller.
      *
-     * @param root loaded JavaFX scene
+     * @param root       loaded JavaFX scene
      * @param controller controller associated with the scene
-     *
      * @author David Vidal - InfoYupay SACS
      * @version 1.0
      */
     public record MainScene(Scene root, MainSceneController controller) {
     }
+
+
 }
