@@ -68,6 +68,13 @@
                                     minHeight="-Infinity" maxHeight="-Infinity" prefHeight="32"/>
                         </VBox>
                     </placeholder>
+                    <contextMenu>
+                        <ContextMenu>
+                            <items>
+                                <MenuItem fx:id="mniCopy" text="Copiar" onAction="#handleCopy"/>
+                            </items>
+                        </ContextMenu>
+                    </contextMenu>
                 </TreeTableView>
             </VBox>
         </center>

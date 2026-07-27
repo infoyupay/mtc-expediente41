@@ -9,10 +9,14 @@ import com.infoyupay.mtcexpediente41.javafx.treetable.TreeTableVehicle;
 import com.infoyupay.mtcexpediente41.pdf.GroupPdfDocument;
 import com.infoyupay.mtcexpediente41.pdf.PdfDocumentNameException;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -22,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -44,16 +49,16 @@ public final class MainSceneController {
      */
     private static final String FXML =
             "/com/infoyupay/mtcexpediente41/javafx/fxml/main-scene.fxml";
-
+    private final ObjectProperty<WorkspaceAnalysis> analysis =
+            new SimpleObjectProperty<>(this, "analysis");
     @FXML
     private Label lblSummary;
-
     @FXML
     private TreeTableView<TreeTableVehicle> tblWorkspace;
-
+    @FXML
+    private MenuItem mniCopy;
     private ExecutorService ioExecutor;
     private Stage primaryStage;
-    private WorkspaceAnalysis analysis;
 
     /**
      * Loads the main scene and its controller from FXML.
@@ -89,6 +94,7 @@ public final class MainSceneController {
                 }
             }
         });
+        mniCopy.disableProperty().bind(analysis.isNull());
     }
 
     /**
@@ -148,7 +154,7 @@ public final class MainSceneController {
      * @param analysis completed workspace analysis to present
      */
     private void showWorkspace(@NotNull WorkspaceAnalysis analysis) {
-        this.analysis = Objects.requireNonNull(analysis, "analysis");
+        setAnalysis(Objects.requireNonNull(analysis, "analysis"));
 
         var root = new TreeItem<>(new TreeTableVehicle());
         for (var group : analysis.groups()) {
@@ -237,7 +243,7 @@ public final class MainSceneController {
      */
     @FXML
     private void handleClean() {
-        analysis = null;
+        setAnalysis(null);
         tblWorkspace.setRoot(null);
     }
 
@@ -276,7 +282,7 @@ public final class MainSceneController {
      */
     @FXML
     private void handleGenerate() {
-        var currentAnalysis = analysis;
+        var currentAnalysis = getAnalysis();
         if (currentAnalysis == null) {
             var alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Workspace requerido");
@@ -318,16 +324,13 @@ public final class MainSceneController {
             protected void processException(Throwable throwable) {
                 switch (throwable) {
                     case Error _ -> Platform.exit();
-                    case FileAlreadyExistsException fileException ->
-                            setMessage(
-                                    "Ya existe un archivo generado con esta versión: "
-                                            + fileException.getFile());
-                    case IOException _ ->
-                            setMessage(
-                                    "No se pudieron generar los archivos PDF.");
-                    default ->
-                            setMessage(
-                                    "Ocurrió un error durante la generación de los archivos PDF.");
+                    case FileAlreadyExistsException fileException -> setMessage(
+                            "Ya existe un archivo generado con esta versión: "
+                                    + fileException.getFile());
+                    case IOException _ -> setMessage(
+                            "No se pudieron generar los archivos PDF.");
+                    default -> setMessage(
+                            "Ocurrió un error durante la generación de los archivos PDF.");
                 }
                 printStackTrace(throwable);
             }
@@ -340,9 +343,59 @@ public final class MainSceneController {
     }
 
     /**
+     * FX Accessor - getter.
+     *
+     * @return value of {@link #analysisProperty()}.get();
+     */
+    public WorkspaceAnalysis getAnalysis() {
+        return analysis.get();
+    }
+
+    /**
+     * FX Accessor - setter.
+     *
+     * @param analysis value to assign into {@link #analysisProperty()}.
+     */
+    public void setAnalysis(WorkspaceAnalysis analysis) {
+        this.analysis.set(analysis);
+    }
+
+    /**
+     * TODO: write documentation.
+     *
+     * @return javaFX Property.
+     */
+    public ObjectProperty<WorkspaceAnalysis> analysisProperty() {
+        return analysis;
+    }
+
+    @FXML
+    private void handleCopy() {
+        var currentAnalysis = getAnalysis();
+        if (currentAnalysis != null
+                && currentAnalysis.canProceed()) {
+            var builder = new StringBuilder();
+            for (var group : currentAnalysis.groups()) {
+                for (var vehicle : group.vehicles()) {
+                    builder.append(group.group());
+                    builder.append("\t");
+                    builder.append(vehicle
+                            .identifier()
+                            .map(SheetVehicleIdentifier::vehicleIdentifier)
+                            .orElse(""));
+                    builder.append("\n");
+                }
+            }
+            Clipboard.getSystemClipboard()
+                    .setContent(
+                            Map.of(DataFormat.PLAIN_TEXT, builder.toString()));
+        }
+    }
+
+    /**
      * Represents a loaded main scene and its controller.
      *
-     * @param root loaded JavaFX scene
+     * @param root       loaded JavaFX scene
      * @param controller controller associated with the scene
      * @author David Vidal - InfoYupay SACS
      * @version 1.0
