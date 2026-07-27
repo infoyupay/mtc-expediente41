@@ -2,13 +2,13 @@ package com.infoyupay.mtcexpediente41.javafx.fxml;
 
 import com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysis;
 import com.infoyupay.mtcexpediente41.datasheet.SheetVehicleIdentifier;
+import com.infoyupay.mtcexpediente41.javafx.task.GenerateWorkspaceTask;
 import com.infoyupay.mtcexpediente41.javafx.task.ReadWorkspaceTask;
 import com.infoyupay.mtcexpediente41.javafx.task.UnsupportedWorkbookFormatException;
 import com.infoyupay.mtcexpediente41.javafx.treetable.TreeTableVehicle;
 import com.infoyupay.mtcexpediente41.pdf.GroupPdfDocument;
 import com.infoyupay.mtcexpediente41.pdf.PdfDocumentNameException;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
@@ -244,10 +245,11 @@ public final class MainSceneController {
     }
 
     /**
-     * Clears the loaded workspace hierarchy and the active VIN filter.
+     * Clears the loaded workspace hierarchy, active analysis, and VIN filter.
      */
     @FXML
     private void handleClean() {
+        analysis = null;
         tblWorkspace.setRoot(null);
         txtFilter.clear();
     }
@@ -309,15 +311,78 @@ public final class MainSceneController {
         this.primaryStage = primaryStage;
     }
 
+    /**
+     * Validates the active analysis and schedules its PDF generation task.
+     */
     @FXML
     private void handleGenerate() {
+        var currentAnalysis = analysis;
+        if (currentAnalysis == null) {
+            var alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Workspace requerido");
+            alert.setHeaderText("No hay un workspace cargado.");
+            alert.setContentText(
+                    "Carga y analiza un workspace antes de generar los expedientes.");
+            if (primaryStage != null) {
+                alert.initOwner(primaryStage);
+            }
+            alert.showAndWait();
+            return;
+        }
 
+        if (!currentAnalysis.canProceed()) {
+            var alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Workspace inconsistente");
+            alert.setHeaderText(
+                    "El workspace contiene inconsistencias pendientes.");
+            alert.setContentText(
+                    "Corrige los problemas detectados y vuelve a cargarlo antes de generar.");
+            if (primaryStage != null) {
+                alert.initOwner(primaryStage);
+            }
+            alert.showAndWait();
+            return;
+        }
+
+        var executor = Objects.requireNonNull(
+                ioExecutor,
+                "Input/output executor has not been configured.");
+        var task = new GenerateWorkspaceTask(currentAnalysis);
+        var monitor = new TaskMonitor() {
+            /**
+             * Reports a PDF generation failure in the task monitor.
+             *
+             * @param throwable failure raised while generating workspace output
+             */
+            @Override
+            protected void processException(Throwable throwable) {
+                switch (throwable) {
+                    case Error _ -> Platform.exit();
+                    case FileAlreadyExistsException fileException ->
+                            setMessage(
+                                    "Ya existe un archivo generado con esta versión: "
+                                            + fileException.getFile());
+                    case IOException _ ->
+                            setMessage(
+                                    "No se pudieron generar los archivos PDF.");
+                    default ->
+                            setMessage(
+                                    "Ocurrió un error durante la generación de los archivos PDF.");
+                }
+                printStackTrace(throwable);
+            }
+        };
+        if (primaryStage != null) {
+            monitor.initOwner(primaryStage);
+        }
+        monitor.monitor(task);
+        executor.execute(task);
     }
 
     /**
      * Represents a loaded main scene and its controller.
      *
-     * @param root       loaded JavaFX scene
+     * @param root loaded JavaFX scene
      * @param controller controller associated with the scene
      * @author David Vidal - InfoYupay SACS
      * @version 1.0
