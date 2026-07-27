@@ -7,7 +7,7 @@ plugins {
 
 group = "com.infoyupay"
 version = providers.gradleProperty("releaseVersion")
-    .orElse("1.0-SNAPSHOT")
+    .orElse("1.0.0")
     .get()
 
 repositories {
