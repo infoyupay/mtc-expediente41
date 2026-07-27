@@ -2,6 +2,7 @@ plugins {
     java
     application
     id("org.openjfx.javafxplugin") version "0.1.0"
+    id("org.beryx.jlink") version "4.1.0"
 }
 
 group = "com.infoyupay"
@@ -33,6 +34,30 @@ javafx {
     version = "26.0.1"
     modules = listOf("javafx.controls", "javafx.fxml")
 }
+
+jlink {
+    options = listOf(
+        "--strip-debug",
+        "--compress=zip-6",
+        "--no-header-files",
+        "--no-man-pages"
+    )
+    launcher {
+        name = "Expediente41"
+        noConsole = true
+    }
+    jpackage {
+        imageName = "Expediente41"
+        installerName = "Expediente41"
+        appVersion = project.version.toString().substringBefore('-')
+        vendor = "InfoYupay SACS"
+        imageOptions = listOf(
+            "--description",
+            "Generador de expedientes DSTT-041"
+        )
+    }
+}
+
 dependencies {
     /*=============*
      * Annotations *
