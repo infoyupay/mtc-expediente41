@@ -25,12 +25,6 @@ import java.util.Objects;
 public final class PdfFileMerger {
 
     /**
-     * Creates a stateless PDF file merger.
-     */
-    public PdfFileMerger() {
-    }
-
-    /**
      * Concatenates source documents in their supplied order.
      *
      * @param sources ordered source PDF paths

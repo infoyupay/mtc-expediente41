@@ -49,23 +49,11 @@ public final class MainSceneController {
     private Label lblSummary;
 
     @FXML
-    private TextField txtFilter;
-
-    @FXML
     private TreeTableView<TreeTableVehicle> tblWorkspace;
 
     private ExecutorService ioExecutor;
     private Stage primaryStage;
     private WorkspaceAnalysis analysis;
-
-    /**
-     * Creates a main scene controller.
-     * <br/>
-     * This constructor intentionally performs no UI initialization because
-     * FXML fields are injected after controller construction.
-     */
-    public MainSceneController() {
-    }
 
     /**
      * Loads the main scene and its controller from FXML.
@@ -251,21 +239,12 @@ public final class MainSceneController {
     private void handleClean() {
         analysis = null;
         tblWorkspace.setRoot(null);
-        txtFilter.clear();
-    }
-
-    /**
-     * Clears the VIN filter text.
-     */
-    @FXML
-    private void handleCleanFilter() {
-        txtFilter.clear();
     }
 
     /**
      * Opens a directory chooser for selecting a workspace.
      *
-     * @return the selected directory path, or an empty optional when cancelled
+     * @return the selected directory path, or an empty optional when canceled
      */
     private Optional<Path> chooseDir() {
         var chooser = new DirectoryChooser();
@@ -275,31 +254,12 @@ public final class MainSceneController {
     }
 
     /**
-     * Returns the executor used to run blocking input/output tasks.
-     *
-     * @return configured input/output executor, or {@code null} before it is
-     * supplied by the application
-     */
-    public ExecutorService getIoExecutor() {
-        return ioExecutor;
-    }
-
-    /**
      * Sets the executor used to run blocking input/output tasks.
      *
      * @param ioExecutor executor supplied by the application
      */
     public void setIoExecutor(ExecutorService ioExecutor) {
         this.ioExecutor = ioExecutor;
-    }
-
-    /**
-     * Returns the primary stage used to own dialogs opened by this controller.
-     *
-     * @return configured primary stage, or {@code null} before it is supplied
-     */
-    public Stage getPrimaryStage() {
-        return primaryStage;
     }
 
     /**

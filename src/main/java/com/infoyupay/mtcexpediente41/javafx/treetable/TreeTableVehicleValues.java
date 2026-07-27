@@ -20,13 +20,6 @@ import java.util.function.Function;
  * @version 1.0
  */
 public final class TreeTableVehicleValues {
-
-    /**
-     * Creates a tree-table value factory provider.
-     */
-    public TreeTableVehicleValues() {
-    }
-
     /**
      * Creates an observable binding whose value is always {@code null}.
      *

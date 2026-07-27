@@ -13,13 +13,6 @@ import javafx.application.Application;
  * @version 1.0
  */
 public class Launcher {
-
-    /**
-     * Creates a launcher instance.
-     */
-    public Launcher() {
-    }
-
     /**
      * Launches the Expediente41 JavaFX application.
      *

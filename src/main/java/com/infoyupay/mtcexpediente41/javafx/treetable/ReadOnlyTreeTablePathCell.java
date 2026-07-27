@@ -21,12 +21,6 @@ import java.nio.file.Path;
 public class ReadOnlyTreeTablePathCell<S> extends TreeTableCell<S, Path> {
 
     /**
-     * Creates a read-only path cell.
-     */
-    public ReadOnlyTreeTablePathCell() {
-    }
-
-    /**
      * Creates a cell factory for read-only path cells.
      *
      * @param <S> row item type used by the tree table

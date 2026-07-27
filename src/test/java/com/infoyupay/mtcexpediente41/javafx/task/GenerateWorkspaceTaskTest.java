@@ -16,6 +16,7 @@ class GenerateWorkspaceTaskTest {
      * Verifies that a generation task cannot be created without a completed
      * workspace analysis.
      */
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void should_reject_missing_workspace_analysis() {
         assertThatNullPointerException()

@@ -56,12 +56,6 @@ public final class WorkspaceAnalyzer {
             Comparator.comparing(document -> document.path().toString());
 
     /**
-     * Creates a stateless workspace analyzer.
-     */
-    public WorkspaceAnalyzer() {
-    }
-
-    /**
      * Correlates the workbook vehicle inventory and parsed PDF documents.
      *
      * @param workspace physical workspace that owns the source files
