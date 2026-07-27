@@ -9,22 +9,30 @@ package com.infoyupay.mtcexpediente41.pdf;
  */
 public final class PdfDocumentNameException extends Exception {
 
+    private final String fileName;
+
     /**
      * Creates an exception with a descriptive message.
      *
      * @param message exception message
      */
-    public PdfDocumentNameException(String message) {
+    public PdfDocumentNameException(String fileName, String message) {
         super(message);
+        this.fileName = fileName;
     }
 
     /**
      * Creates an exception with a descriptive message and root cause.
      *
      * @param message exception message
-     * @param cause root cause
+     * @param cause   root cause
      */
-    public PdfDocumentNameException(String message, Throwable cause) {
+    public PdfDocumentNameException(String fileName, String message, Throwable cause) {
         super(message, cause);
+        this.fileName = fileName;
+    }
+
+    public String getFileName() {
+        return fileName;
     }
 }

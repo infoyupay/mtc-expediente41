@@ -45,6 +45,7 @@ public final class PdfDocumentParser {
         var fileNamePath = path.getFileName();
         if (fileNamePath == null) {
             throw new PdfDocumentNameException(
+                    path.toString(),
                     "PDF path does not contain a file name: " + path);
         }
 
@@ -53,6 +54,7 @@ public final class PdfDocumentParser {
 
         if (!fileNameMatcher.matches()) {
             throw new PdfDocumentNameException(
+                    fileName,
                     "Invalid PDF document file name: " + fileName);
         }
 
@@ -68,6 +70,7 @@ public final class PdfDocumentParser {
             var markerMatcher = MARKER_PATTERN.matcher(fileName);
             if (!markerMatcher.find()) {
                 throw new PdfDocumentNameException(
+                        fileName,
                         "Vehicle PDF document does not end with a four-digit "
                                 + "marker: " + fileName);
             }
@@ -79,6 +82,7 @@ public final class PdfDocumentParser {
                     path);
         } catch (NumberFormatException e) {
             throw new PdfDocumentNameException(
+                    fileName,
                     "PDF document number exceeds the supported integer range: "
                             + fileName,
                     e);

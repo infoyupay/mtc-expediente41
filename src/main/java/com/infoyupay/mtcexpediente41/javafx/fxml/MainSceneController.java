@@ -1,9 +1,12 @@
 package com.infoyupay.mtcexpediente41.javafx.fxml;
 
 import com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysis;
+import com.infoyupay.mtcexpediente41.datasheet.SheetVehicleIdentifier;
 import com.infoyupay.mtcexpediente41.javafx.task.ReadWorkspaceTask;
 import com.infoyupay.mtcexpediente41.javafx.task.UnsupportedWorkbookFormatException;
 import com.infoyupay.mtcexpediente41.javafx.treetable.TreeTableVehicle;
+import com.infoyupay.mtcexpediente41.pdf.GroupPdfDocument;
+import com.infoyupay.mtcexpediente41.pdf.PdfDocumentNameException;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -51,6 +54,7 @@ public final class MainSceneController {
 
     private ExecutorService ioExecutor;
     private Stage primaryStage;
+    private WorkspaceAnalysis analysis;
 
     /**
      * Creates a main scene controller.
@@ -127,9 +131,11 @@ public final class MainSceneController {
             protected void processException(Throwable throwable) {
                 switch (throwable) {
                     case Error _ -> Platform.exit();
-                    case UnsupportedWorkbookFormatException exception ->
+                    case UnsupportedWorkbookFormatException formatException ->
                             setMessage("Se ha encontrado un tipo de archivo que no podemos leer en: "
-                                    + exception.getFileName());
+                                    + formatException.getFileName());
+                    case PdfDocumentNameException nameException ->
+                            setMessage("El nombre de un archivo es inconsistente: " + nameException.getFileName());
                     default -> {
                     }
                 }
@@ -142,8 +148,6 @@ public final class MainSceneController {
         monitor.monitor(task);
         executor.execute(task);
     }
-
-    private WorkspaceAnalysis analysis;
 
     /**
      * Presents a completed workspace analysis in the tree table.
@@ -159,7 +163,7 @@ public final class MainSceneController {
         var root = new TreeItem<>(new TreeTableVehicle());
         for (var group : analysis.groups()) {
             var brochure = group.brochure()
-                    .map(document -> document.path())
+                    .map(GroupPdfDocument::path)
                     .orElse(null);
             var groupItem = new TreeItem<>(TreeTableVehicle.groupBranch(
                     Integer.toString(group.group()),
@@ -168,7 +172,7 @@ public final class MainSceneController {
             for (var vehicle : group.vehicles()) {
                 var vin = vehicle.identifiers()
                         .stream()
-                        .map(identifier -> identifier.vehicleIdentifier())
+                        .map(SheetVehicleIdentifier::vehicleIdentifier)
                         .collect(Collectors.joining(", "));
                 if (vin.isEmpty()) {
                     vin = vehicle.marker();
@@ -271,7 +275,7 @@ public final class MainSceneController {
      * Returns the executor used to run blocking input/output tasks.
      *
      * @return configured input/output executor, or {@code null} before it is
-     *         supplied by the application
+     * supplied by the application
      */
     public ExecutorService getIoExecutor() {
         return ioExecutor;
