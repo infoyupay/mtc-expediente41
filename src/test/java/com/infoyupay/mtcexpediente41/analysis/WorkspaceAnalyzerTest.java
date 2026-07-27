@@ -24,6 +24,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for {@link WorkspaceAnalyzer}.
+ *  <div data-infoyupay="manual-test-verification"
+ *    style="border:1px solid #c00;
+ *    border-radius:2px;
+ *    padding:4px;
+ *    color:#c00;
+ *    margin-top:6px;
+ *    margin-bottom:6px;">
+ *       <strong>Tested-by:</strong>
+ *       dvidal@infoyupay.com - passed 3 tests in 3.249s at 2026-07-27T10:01:12 (UTC-5).
+ * </div>
  *
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
@@ -126,12 +136,12 @@ class WorkspaceAnalyzerTest {
                 .extracting(WorkspaceGroup::group)
                 .containsExactly(1, 2, 3);
         assertThat(result.groups().getFirst().vehicles())
-                .filteredOn(vehicle -> vehicle.marker().equals("1001"))
+                .filteredOn(vehicle -> "1001".equals(vehicle.marker()))
                 .singleElement()
                 .extracting(vehicle -> vehicle.identifiers().size())
                 .isEqualTo(2);
         assertThat(result.groups().getFirst().vehicles())
-                .filteredOn(vehicle -> vehicle.marker().equals("9999"))
+                .filteredOn(vehicle -> "9999".equals(vehicle.marker()))
                 .singleElement()
                 .extracting(WorkspaceVehicle::identifiers)
                 .satisfies(identifiers -> assertThat(identifiers).isEmpty());
