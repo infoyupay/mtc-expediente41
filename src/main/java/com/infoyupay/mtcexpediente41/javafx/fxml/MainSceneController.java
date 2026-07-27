@@ -1,5 +1,8 @@
 package com.infoyupay.mtcexpediente41.javafx.fxml;
 
+import com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysis;
+import com.infoyupay.mtcexpediente41.javafx.task.ReadWorkspaceTask;
+import com.infoyupay.mtcexpediente41.javafx.task.UnsupportedWorkbookFormatException;
 import com.infoyupay.mtcexpediente41.javafx.treetable.TreeTableVehicle;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -8,6 +11,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +47,9 @@ public final class MainSceneController {
 
     @FXML
     private TreeTableView<TreeTableVehicle> tblWorkspace;
+
+    private ExecutorService ioExecutor;
+    private Stage primaryStage;
 
     /**
      * Creates a main scene controller.
@@ -97,8 +105,28 @@ public final class MainSceneController {
         chooseDir().ifPresent(this::readWorkspace);
     }
 
-    private void readWorkspace(Path workspace){
-        //TODO: make things happen.
+    private void readWorkspace(@NotNull Path workspace) {
+        var task = new ReadWorkspaceTask(workspace);
+        task.setOnSucceeded(_ -> showWorkspace(task.getValue()));
+        new TaskMonitor() {
+            @Override
+            protected void processException(Throwable t) {
+                switch (t) {
+                    case Error _ -> Platform.exit();
+                    case UnsupportedWorkbookFormatException f ->
+                            setMessage("Se ha encontrado un tipo de archivo que no podemos leer en: "
+                                    + f.getFileName());
+                    default -> {
+                    }
+                }
+                printStackTrace(t);
+            }
+        }.monitor(task);
+    }
+    private WorkspaceAnalysis analysis;
+    private void showWorkspace(WorkspaceAnalysis analysis) {
+        this.analysis = analysis;
+        //TODO: convert analyisis into TreeItem<TreeTableVehicle>
     }
 
     /**
@@ -160,23 +188,10 @@ public final class MainSceneController {
     }
 
     /**
-     * Represents a loaded main scene and its controller.
-     *
-     * @param root       loaded JavaFX scene
-     * @param controller controller associated with the scene
-     * @author David Vidal - InfoYupay SACS
-     * @version 1.0
-     */
-    public record MainScene(Scene root, MainSceneController controller) {
-    }
-
-    private ExecutorService ioExecutor;
-
-    /**
      * Returns the executor used to run blocking input/output tasks.
      *
      * @return configured input/output executor, or {@code null} before it is
-     *         supplied by the application
+     * supplied by the application
      */
     public ExecutorService getIoExecutor() {
         return ioExecutor;
@@ -189,5 +204,24 @@ public final class MainSceneController {
      */
     public void setIoExecutor(ExecutorService ioExecutor) {
         this.ioExecutor = ioExecutor;
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+    public void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+    }
+
+    /**
+     * Represents a loaded main scene and its controller.
+     *
+     * @param root       loaded JavaFX scene
+     * @param controller controller associated with the scene
+     * @author David Vidal - InfoYupay SACS
+     * @version 1.0
+     */
+    public record MainScene(Scene root, MainSceneController controller) {
     }
 }

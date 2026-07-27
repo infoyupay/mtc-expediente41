@@ -43,12 +43,36 @@ public final class ReadWorkspaceTask extends Task<WorkspaceAnalysis> {
     }
 
     /**
+     * Selects the vehicle-identifier reader for a supported workbook.
+     *
+     * @param workbook supported XLSX or ODS workbook
+     * @return matching vehicle-identifier reader
+     * @throws IllegalArgumentException if the workbook suffix is unsupported
+     */
+    private static VehicleIdentifierReader readerFor(Path workbook) {
+        var originalName = workbook
+                .getFileName()
+                .toString();
+        var lowerName = originalName.toLowerCase(Locale.ROOT);
+
+        if (lowerName.endsWith(".xlsx")) {
+            return new XlsxVehicleIdentifierReader();
+        }
+
+        if (lowerName.endsWith(".ods")) {
+            return new OdsVehicleIdentifierReader();
+        }
+
+        throw new UnsupportedWorkbookFormatException(originalName);
+    }
+
+    /**
      * Reads every workspace source and produces its correlated analysis.
      *
      * @return immutable workspace analysis
-     * @throws WorkspaceException if the workspace cannot be discovered or
-     *                            prepared
-     * @throws IOException if the spreadsheet workbook cannot be read
+     * @throws WorkspaceException       if the workspace cannot be discovered or
+     *                                  prepared
+     * @throws IOException              if the spreadsheet workbook cannot be read
      * @throws PdfDocumentNameException if a source PDF file name is invalid
      */
     @Override
@@ -66,30 +90,5 @@ public final class ReadWorkspaceTask extends Task<WorkspaceAnalysis> {
                 workspace,
                 identifiers,
                 documents);
-    }
-
-    /**
-     * Selects the vehicle-identifier reader for a supported workbook.
-     *
-     * @param workbook supported XLSX or ODS workbook
-     * @return matching vehicle-identifier reader
-     * @throws IllegalArgumentException if the workbook suffix is unsupported
-     */
-    private static VehicleIdentifierReader readerFor(Path workbook) {
-        var fileName = workbook
-                .getFileName()
-                .toString()
-                .toLowerCase(Locale.ROOT);
-
-        if (fileName.endsWith(".xlsx")) {
-            return new XlsxVehicleIdentifierReader();
-        }
-
-        if (fileName.endsWith(".ods")) {
-            return new OdsVehicleIdentifierReader();
-        }
-
-        throw new IllegalArgumentException(
-                "Unsupported workspace workbook: " + workbook);
     }
 }
