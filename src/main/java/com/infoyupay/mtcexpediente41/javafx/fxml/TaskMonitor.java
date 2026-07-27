@@ -14,11 +14,25 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 
-public abstract class TaskMonitor extends Alert implements EventHandler<WorkerStateEvent> {
+/**
+ * Displays the state, messages, and failures of a JavaFX {@link Task}.
+ * <br/>
+ * The monitor subscribes to one task, presents its messages in a diagnostic
+ * console, and delegates failure-specific handling to subclasses.
+ *
+ * @author David Vidal - InfoYupay SACS
+ * @version 1.0
+ */
+public abstract class TaskMonitor extends Alert
+        implements EventHandler<WorkerStateEvent> {
 
     private final TextArea console;
     private Task<?> task;
 
+    /**
+     * Creates an expanded informational dialog with a read-only diagnostic
+     * console.
+     */
     public TaskMonitor() {
         super(AlertType.INFORMATION);
         setContentText("Una tarea está en curso, para más detalles revisa la salida.");
@@ -33,6 +47,11 @@ public abstract class TaskMonitor extends Alert implements EventHandler<WorkerSt
         getDialogPane().setExpanded(true);
     }
 
+    /**
+     * Attaches this monitor to a task and displays the monitoring dialog.
+     *
+     * @param task task whose state and messages will be observed
+     */
     public void monitor(Task<?> task) {
         this.task = task;
         this.task.addEventHandler(WorkerStateEvent.ANY, this);
@@ -40,33 +59,55 @@ public abstract class TaskMonitor extends Alert implements EventHandler<WorkerSt
             console.appendText(message + "\n");
             getDialogPane().setHeaderText(message);
         });
-
+        show();
     }
 
+    /**
+     * Updates the dialog when the monitored task reaches a terminal state.
+     *
+     * @param event worker-state event emitted by the monitored task
+     */
     @Override
     public void handle(WorkerStateEvent event) {
         if (event.getEventType() == WorkerStateEvent.WORKER_STATE_SUCCEEDED) {
             getDialogPane().setHeaderText("Tarea completada exitosamente.");
-        } else if (event.getEventType() == WorkerStateEvent.WORKER_STATE_FAILED) {
+        } else if (event.getEventType()
+                == WorkerStateEvent.WORKER_STATE_FAILED) {
             processException(task.getException());
-        } else if (event.getEventType() == WorkerStateEvent.WORKER_STATE_CANCELLED) {
+        } else if (event.getEventType()
+                == WorkerStateEvent.WORKER_STATE_CANCELLED) {
             getDialogPane().setHeaderText("Tarea cancelada.");
         }
     }
 
-    protected abstract void processException(Throwable t);
+    /**
+     * Applies task-specific handling to a failure raised by the monitored task.
+     *
+     * @param throwable failure raised by the task
+     */
+    protected abstract void processException(Throwable throwable);
 
-    protected void printStackTrace(Throwable t) {
+    /**
+     * Appends a throwable stack trace to the diagnostic console.
+     *
+     * @param throwable throwable whose stack trace will be appended
+     */
+    protected void printStackTrace(Throwable throwable) {
         try (var sw = new StringWriter();
              var pw = new PrintWriter(sw)) {
-            t.printStackTrace(pw);
+            throwable.printStackTrace(pw);
             console.appendText(sw.toString());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } catch (IOException exception) {
+            throw new UncheckedIOException(exception);
         }
     }
 
-    protected void setMessage(String s) {
-        setHeaderText(s);
+    /**
+     * Replaces the dialog header with a user-facing status message.
+     *
+     * @param message message to display
+     */
+    protected void setMessage(String message) {
+        setHeaderText(message);
     }
 }

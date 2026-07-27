@@ -20,13 +20,14 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * Controls the main workspace scene.
  * <br/>
- * The current controller presents the initial {@link TreeTableView} skeleton
- * and a proof-of-concept hierarchy that demonstrates the intended group,
- * vehicle, and document levels.
+ * The controller reads a selected workspace outside the JavaFX application
+ * thread and presents its group, vehicle, and document hierarchy in a
+ * {@link TreeTableView}.
  *
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
@@ -97,36 +98,115 @@ public final class MainSceneController {
     }
 
     /**
-     * Populates the workspace tree with proof-of-concept data after a
-     * workspace-selection request.
+     * Requests a workspace directory and starts reading it when selected.
      */
     @FXML
     private void handleWorkspaceSelection() {
         chooseDir().ifPresent(this::readWorkspace);
     }
 
+    /**
+     * Creates, monitors, and schedules a task that reads the selected workspace.
+     *
+     * @param workspace selected workspace root directory
+     */
     private void readWorkspace(@NotNull Path workspace) {
+        var executor = Objects.requireNonNull(
+                ioExecutor,
+                "Input/output executor has not been configured.");
         var task = new ReadWorkspaceTask(workspace);
         task.setOnSucceeded(_ -> showWorkspace(task.getValue()));
-        new TaskMonitor() {
+        var monitor = new TaskMonitor() {
+            /**
+             * Reports the task failure in the monitor and applies any
+             * exception-specific handling.
+             *
+             * @param throwable failure raised while reading the workspace
+             */
             @Override
-            protected void processException(Throwable t) {
-                switch (t) {
+            protected void processException(Throwable throwable) {
+                switch (throwable) {
                     case Error _ -> Platform.exit();
-                    case UnsupportedWorkbookFormatException f ->
+                    case UnsupportedWorkbookFormatException exception ->
                             setMessage("Se ha encontrado un tipo de archivo que no podemos leer en: "
-                                    + f.getFileName());
+                                    + exception.getFileName());
                     default -> {
                     }
                 }
-                printStackTrace(t);
+                printStackTrace(throwable);
             }
-        }.monitor(task);
+        };
+        if (primaryStage != null) {
+            monitor.initOwner(primaryStage);
+        }
+        monitor.monitor(task);
+        executor.execute(task);
     }
+
     private WorkspaceAnalysis analysis;
-    private void showWorkspace(WorkspaceAnalysis analysis) {
-        this.analysis = analysis;
-        //TODO: convert analyisis into TreeItem<TreeTableVehicle>
+
+    /**
+     * Presents a completed workspace analysis in the tree table.
+     * <br/>
+     * Each document group becomes a top-level branch, each analyzed vehicle
+     * becomes a child branch, and its source PDFs become document leaves.
+     *
+     * @param analysis completed workspace analysis to present
+     */
+    private void showWorkspace(@NotNull WorkspaceAnalysis analysis) {
+        this.analysis = Objects.requireNonNull(analysis, "analysis");
+
+        var root = new TreeItem<>(new TreeTableVehicle());
+        for (var group : analysis.groups()) {
+            var brochure = group.brochure()
+                    .map(document -> document.path())
+                    .orElse(null);
+            var groupItem = new TreeItem<>(TreeTableVehicle.groupBranch(
+                    Integer.toString(group.group()),
+                    brochure));
+
+            for (var vehicle : group.vehicles()) {
+                var vin = vehicle.identifiers()
+                        .stream()
+                        .map(identifier -> identifier.vehicleIdentifier())
+                        .collect(Collectors.joining(", "));
+                if (vin.isEmpty()) {
+                    vin = vehicle.marker();
+                }
+
+                var vehicleItem =
+                        new TreeItem<>(TreeTableVehicle.vinBranch(vin));
+                for (var document : vehicle.documents()) {
+                    vehicleItem.getChildren().add(new TreeItem<>(
+                            TreeTableVehicle.documentLeaf(
+                                    Integer.toString(
+                                            document.documentNumber()),
+                                    document.path())));
+                }
+                groupItem.getChildren().add(vehicleItem);
+            }
+            root.getChildren().add(groupItem);
+        }
+
+        if (!analysis.ungroupedVehicleIdentifiers().isEmpty()) {
+            var ungroupedItem = new TreeItem<>(
+                    TreeTableVehicle.groupBranch("Sin grupo", null));
+            for (var identifier
+                    : analysis.ungroupedVehicleIdentifiers()) {
+                ungroupedItem.getChildren().add(new TreeItem<>(
+                        TreeTableVehicle.vinBranch(
+                                identifier.vehicleIdentifier())));
+            }
+            root.getChildren().add(ungroupedItem);
+        }
+
+        tblWorkspace.setRoot(root);
+        lblSummary.setText(
+                "Lote: %d vehículos identificados / %d grupos detectados"
+                        .formatted(
+                                analysis.vehicleCount(),
+                                analysis.groupCount()));
+        expandAll(root);
     }
 
     /**
@@ -183,7 +263,7 @@ public final class MainSceneController {
     private Optional<Path> chooseDir() {
         var chooser = new DirectoryChooser();
         chooser.setTitle("Abrir workspace...");
-        return Optional.ofNullable(chooser.showDialog(null))
+        return Optional.ofNullable(chooser.showDialog(primaryStage))
                 .map(File::toPath);
     }
 
@@ -191,7 +271,7 @@ public final class MainSceneController {
      * Returns the executor used to run blocking input/output tasks.
      *
      * @return configured input/output executor, or {@code null} before it is
-     * supplied by the application
+     *         supplied by the application
      */
     public ExecutorService getIoExecutor() {
         return ioExecutor;
@@ -206,10 +286,20 @@ public final class MainSceneController {
         this.ioExecutor = ioExecutor;
     }
 
+    /**
+     * Returns the primary stage used to own dialogs opened by this controller.
+     *
+     * @return configured primary stage, or {@code null} before it is supplied
+     */
     public Stage getPrimaryStage() {
         return primaryStage;
     }
 
+    /**
+     * Sets the primary stage used to own dialogs opened by this controller.
+     *
+     * @param primaryStage primary application stage
+     */
     public void setPrimaryStage(Stage primaryStage) {
         this.primaryStage = primaryStage;
     }

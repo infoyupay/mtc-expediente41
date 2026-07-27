@@ -47,7 +47,8 @@ public final class ReadWorkspaceTask extends Task<WorkspaceAnalysis> {
      *
      * @param workbook supported XLSX or ODS workbook
      * @return matching vehicle-identifier reader
-     * @throws IllegalArgumentException if the workbook suffix is unsupported
+     * @throws UnsupportedWorkbookFormatException if the workbook suffix is
+     *                                            unsupported
      */
     private static VehicleIdentifierReader readerFor(Path workbook) {
         var originalName = workbook
