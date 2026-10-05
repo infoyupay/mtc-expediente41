@@ -43,8 +43,8 @@ import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemTyp
 public final class WorkspaceAnalyzer {
 
     /**
-     * Number of trailing digits used to correlate workbook identifiers with
-     * vehicle PDF file names.
+     * Number of trailing alphanumeric characters used to correlate workbook
+     * identifiers with vehicle PDF file names.
      */
     private static final int MARKER_LENGTH = 4;
 
@@ -112,7 +112,8 @@ public final class WorkspaceAnalyzer {
     }
 
     /**
-     * Indexes workbook vehicles by their trailing four-digit markers.
+     * Indexes workbook vehicles by their trailing four-character alphanumeric
+     * markers.
      *
      * @param identifiers workbook vehicle inventory
      * @param ungroupedVehicles destination for identifiers with invalid markers
@@ -134,7 +135,7 @@ public final class WorkspaceAnalyzer {
                 problems.add(problem(
                         INVALID_VEHICLE_MARKER,
                         ("Vehicle identifier '%s' from sheet '%s' does not end "
-                                + "with a four-digit marker.")
+                                + "with a four-character alphanumeric marker.")
                                 .formatted(
                                         identifier.vehicleIdentifier(),
                                         identifier.sheetName())));
@@ -150,7 +151,8 @@ public final class WorkspaceAnalyzer {
     }
 
     /**
-     * Extracts a four-digit marker from the end of a vehicle identifier.
+     * Extracts a four-character alphanumeric marker from the end of a vehicle
+     * identifier.
      *
      * @param vehicleIdentifier complete workbook vehicle identifier
      * @return marker, or {@code null} when the identifier has no valid marker
@@ -166,7 +168,9 @@ public final class WorkspaceAnalyzer {
                 normalized.length() - MARKER_LENGTH);
 
         return marker.chars()
-                .allMatch(character -> character >= '0' && character <= '9')
+                .allMatch(character -> character >= '0' && character <= '9'
+                        || character >= 'A' && character <= 'Z'
+                        || character >= 'a' && character <= 'z')
                 ? marker
                 : null;
     }

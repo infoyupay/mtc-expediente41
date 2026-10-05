@@ -25,7 +25,8 @@ directory. Subdirectories are also scanned recursively, except for the
 
 Each worksheet in the workbook represents one vehicle. Its complete VIN must be
 stored in cell **C13**. Expediente41 uses the final four characters of the VIN
-to match it with its PDF documents; those four characters must be digits.
+to match it with its PDF documents; those four characters must be ASCII letters
+or digits.
 
 Example:
 
@@ -45,7 +46,8 @@ Every source PDF name must begin with:
 group.document
 ```
 
-Both values are positive integers separated by a dot:
+Both values are positive integers separated by a dot. Leading zeroes are
+supported in either value, so `01.01` and `01.1` are equivalent to `1.1`:
 
 - Document `1` is the manufacturer brochure shared by the entire group.
 - Document `2` is the vehicle request.
@@ -53,28 +55,29 @@ Both values are positive integers separated by a dot:
 - Documents `4` and above are optional additional documents.
 
 The brochure does not carry a VIN marker. Every vehicle-specific document
-(`2` and above) must end with a space followed by the final four digits of the
-VIN.
+(`2` and above) must end with a space followed by the final four alphanumeric
+characters of the VIN.
 
 Recommended format:
 
 ```text
-<group>.<document> <description> <last-four-VIN-digits>.pdf
+<group>.<document> <description> <last-four-VIN-characters>.pdf
 ```
 
 Example for group `3` and a vehicle whose VIN ends in `4821`:
 
 ```text
-3.1 Manufacturer Brochure.pdf
-3.2 Special Characteristics 4821.pdf
-3.3 Technical Sheet 4821.pdf
-3.4 Transfer Order 4821.pdf
-3.5 Photographic Panel 4821.pdf
+03.01 Manufacturer Brochure.pdf
+03.02 Special Characteristics 4821.pdf
+03.03 Technical Sheet 4821.pdf
+03.04 Transfer Order 4821.pdf
+03.05 Photographic Panel 4821.pdf
 ```
 
 Descriptions are free text. The significant parts are the numeric
-`group.document` prefix and, for vehicle-specific documents, the four-digit
-marker immediately before `.pdf`. File suffix matching is case-insensitive.
+`group.document` prefix and, for vehicle-specific documents, the
+four-character alphanumeric marker immediately before `.pdf`. File suffix
+matching is case-insensitive.
 
 Each group must contain exactly one brochure. Every vehicle must contain
 documents `2` and `3`; document numbers must not be duplicated for the same

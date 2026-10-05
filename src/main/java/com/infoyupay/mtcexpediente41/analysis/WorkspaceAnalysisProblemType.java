@@ -10,7 +10,8 @@ package com.infoyupay.mtcexpediente41.analysis;
 public enum WorkspaceAnalysisProblemType {
 
     /**
-     * A workbook vehicle identifier does not end with a four-digit marker.
+     * A workbook vehicle identifier does not end with a four-character
+     * alphanumeric marker.
      */
     INVALID_VEHICLE_MARKER,
 

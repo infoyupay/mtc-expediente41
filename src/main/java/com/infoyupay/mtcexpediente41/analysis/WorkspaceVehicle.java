@@ -16,7 +16,7 @@ import java.util.Optional;
  * list exposes a PDF marker missing from the workbook, while multiple entries
  * preserve an ambiguous marker instead of selecting a vehicle arbitrarily.
  *
- * @param marker four-digit vehicle marker
+ * @param marker four-character alphanumeric vehicle marker
  * @param identifiers workbook vehicles that share the marker
  * @param documents vehicle-specific PDF documents in document-number order
  *
@@ -32,7 +32,7 @@ public record WorkspaceVehicle(
     /**
      * Creates an immutable analyzed vehicle.
      *
-     * @param marker four-digit vehicle marker
+     * @param marker four-character alphanumeric vehicle marker
      * @param identifiers workbook vehicles that share the marker
      * @param documents vehicle-specific PDF documents
      */
@@ -46,9 +46,10 @@ public record WorkspaceVehicle(
 
         if (marker.length() != 4
                 || marker.chars().anyMatch(
-                character -> character < '0' || character > '9')) {
+                character -> !isAsciiAlphanumeric(character))) {
             throw new IllegalArgumentException(
-                    "Vehicle marker must contain exactly four digits.");
+                    "Vehicle marker must contain exactly four alphanumeric "
+                            + "characters.");
         }
 
         if (documents.isEmpty()) {
@@ -61,6 +62,18 @@ public record WorkspaceVehicle(
             throw new IllegalArgumentException(
                     "Every vehicle document must use the analyzed marker.");
         }
+    }
+
+    /**
+     * Determines whether a character belongs to the supported marker alphabet.
+     *
+     * @param character character to test
+     * @return {@code true} for an ASCII letter or digit
+     */
+    private static boolean isAsciiAlphanumeric(int character) {
+        return character >= '0' && character <= '9'
+                || character >= 'A' && character <= 'Z'
+                || character >= 'a' && character <= 'z';
     }
 
     /**
