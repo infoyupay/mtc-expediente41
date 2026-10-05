@@ -43,7 +43,7 @@ class PdfDocumentParserTest {
     @Test
     void shouldParseGroupBrochureWithoutMarker()
             throws PdfDocumentNameException {
-        var path = Path.of("1.1 Brochure Model 2024.pdf");
+        var path = Path.of("01.01 Brochure Model 2024.pdf");
 
         var document = parser.parse(path);
 
@@ -58,15 +58,15 @@ class PdfDocumentParserTest {
     }
 
     /**
-     * Verifies that a descriptive vehicle document name provides its group,
-     * document number, and marker.
+     * Verifies that zero-padded group and document segments provide their
+     * numeric values together with the vehicle marker.
      *
      * @throws PdfDocumentNameException if the sample name cannot be parsed
      */
     @Test
-    void shouldParseDescriptiveVehicleDocument()
+    void shouldParseZeroPaddedVehicleDocument()
             throws PdfDocumentNameException {
-        var path = Path.of("2.4 Fotos 1006.pdf");
+        var path = Path.of("02.04 Fotos A1B2.pdf");
 
         var document = parser.parse(path);
 
@@ -78,7 +78,7 @@ class PdfDocumentParserTest {
                             assertThat(vehicleDocument.documentNumber())
                                     .isEqualTo(4);
                             assertThat(vehicleDocument.marker())
-                                    .isEqualTo("1006");
+                                    .isEqualTo("A1B2");
                             assertThat(vehicleDocument.path()).isEqualTo(path);
                         });
     }
@@ -115,7 +115,8 @@ class PdfDocumentParserTest {
 
         assertThatExceptionOfType(PdfDocumentNameException.class)
                 .isThrownBy(() -> parser.parse(path))
-                .withMessageContaining("four-digit marker");
+                .withMessageContaining(
+                        "four-character alphanumeric marker");
     }
 
     /**

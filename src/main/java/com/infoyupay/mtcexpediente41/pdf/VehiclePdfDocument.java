@@ -8,12 +8,12 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Represents a vehicle-specific PDF document identified by a four-digit
- * marker.
+ * Represents a vehicle-specific PDF document identified by a four-character
+ * alphanumeric marker.
  *
  * @param group document group
  * @param documentNumber vehicle document number
- * @param marker four-digit vehicle marker
+ * @param marker four-character alphanumeric vehicle marker
  * @param path source PDF path
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
@@ -25,7 +25,8 @@ public record VehiclePdfDocument(
         @NotNull Path path
 ) implements PdfDocument {
 
-    private static final Pattern MARKER_PATTERN = Pattern.compile("\\d{4}");
+    private static final Pattern MARKER_PATTERN =
+            Pattern.compile("[A-Za-z0-9]{4}");
 
     /**
      * Orders vehicle documents by group and then by marker, matching the
@@ -41,7 +42,7 @@ public record VehiclePdfDocument(
      *
      * @param group document group
      * @param documentNumber vehicle document number
-     * @param marker four-digit vehicle marker
+     * @param marker four-character alphanumeric vehicle marker
      * @param path source PDF path
      */
     public VehiclePdfDocument {
@@ -60,7 +61,8 @@ public record VehiclePdfDocument(
 
         if (!MARKER_PATTERN.matcher(marker).matches()) {
             throw new IllegalArgumentException(
-                    "Vehicle marker must contain exactly four digits.");
+                    "Vehicle marker must contain exactly four alphanumeric "
+                            + "characters.");
         }
     }
 }

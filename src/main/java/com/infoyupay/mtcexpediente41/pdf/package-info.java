@@ -4,9 +4,9 @@
  * marker.
  * <br/>
  * Group brochures are shared by every vehicle in their group and therefore do
- * not carry a marker. Vehicle documents carry a four-digit marker and can be
- * selected and ordered by group and marker when producing consolidated files
- * for the complete batch.
+ * not carry a marker. Vehicle documents carry a four-character alphanumeric
+ * marker and can be selected and ordered by group and marker when producing
+ * consolidated files for the complete batch.
  *
  * @author David Vidal - InfoYupay SACS
  * @version 1.0

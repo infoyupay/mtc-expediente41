@@ -11,10 +11,11 @@ import java.util.regex.Pattern;
 /**
  * Parses document metadata encoded in deterministic source PDF file names.
  * <br/>
- * Names begin with a group and document number separated by a dot. Document
- * number {@code 1} identifies a group brochure and therefore has no vehicle
- * marker. Every other document number must end with a four-digit marker before
- * the PDF suffix.
+ * Names begin with a group and document number separated by a dot. Both
+ * positive numbers may contain leading zeroes. Document number {@code 1}
+ * identifies a group brochure and therefore has no vehicle marker. Every
+ * other document number must end with a four-character alphanumeric marker
+ * before the PDF suffix.
  *
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
@@ -22,12 +23,12 @@ import java.util.regex.Pattern;
 public final class PdfDocumentParser {
 
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile(
-            "^(?<group>[1-9]\\d*)\\.(?<document>[1-9]\\d*)"
+            "^(?<group>0*[1-9]\\d*)\\.(?<document>0*[1-9]\\d*)"
                     + "(?:\\s+.*)?\\.pdf$",
             Pattern.CASE_INSENSITIVE);
 
     private static final Pattern MARKER_PATTERN = Pattern.compile(
-            "(?:^|\\s)(?<marker>\\d{4})\\.pdf$",
+            "(?:^|\\s)(?<marker>[A-Za-z0-9]{4})\\.pdf$",
             Pattern.CASE_INSENSITIVE);
 
     /**
@@ -71,8 +72,9 @@ public final class PdfDocumentParser {
             if (!markerMatcher.find()) {
                 throw new PdfDocumentNameException(
                         fileName,
-                        "Vehicle PDF document does not end with a four-digit "
-                                + "marker: " + fileName);
+                        "Vehicle PDF document does not end with a "
+                                + "four-character alphanumeric marker: "
+                                + fileName);
             }
 
             return new VehiclePdfDocument(

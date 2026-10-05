@@ -54,7 +54,7 @@ class WorkspaceAnalyzerTest {
         var workspace = workspace();
         var firstVehicle = new SheetVehicleIdentifier(
                 "Vehicle B",
-                "LZZ5BLND5SAJ01002");
+                "LZZ5BLND5SAJ0A1B2");
         var secondVehicle = new SheetVehicleIdentifier(
                 "Vehicle A",
                 "LZZ5BLND7SAJ01001");
@@ -62,7 +62,7 @@ class WorkspaceAnalyzerTest {
         List<PdfDocument> documents = List.of(
                 vehicleDocument(1, 3, "1001"),
                 vehicleDocument(1, 2, "1001"),
-                vehicleDocument(1, 2, "1002"),
+                vehicleDocument(1, 2, "A1B2"),
                 brochure(1));
 
         var result = analyzer.analyze(
@@ -81,7 +81,7 @@ class WorkspaceAnalyzerTest {
             assertThat(group.brochure()).contains(brochure(1));
             assertThat(group.vehicles())
                     .extracting(WorkspaceVehicle::marker)
-                    .containsExactly("1002", "1001");
+                    .containsExactly("A1B2", "1001");
             assertThat(group.vehicles().getFirst().identifier())
                     .contains(firstVehicle);
             assertThat(group.vehicles().getLast().documents())
