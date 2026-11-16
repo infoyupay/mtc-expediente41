@@ -54,5 +54,8 @@ public enum WorkspaceAnalysisProblemType {
      * A vehicle contains more than one PDF with the same document number in
      * one group.
      */
-    DUPLICATE_VEHICLE_DOCUMENT
+    DUPLICATE_VEHICLE_DOCUMENT,
+
+    /** A repeated position contains shared PDFs or mixes shared and individual PDFs. */
+    INVALID_DOCUMENT_POSITION
 }

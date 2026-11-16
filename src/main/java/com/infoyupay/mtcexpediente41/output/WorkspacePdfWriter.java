@@ -4,7 +4,6 @@ import com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysis;
 import com.infoyupay.mtcexpediente41.analysis.WorkspaceGroup;
 import com.infoyupay.mtcexpediente41.analysis.WorkspaceVehicle;
 import com.infoyupay.mtcexpediente41.pdf.PdfDocument;
-import com.infoyupay.mtcexpediente41.pdf.PdfDocuments;
 import com.infoyupay.mtcexpediente41.pdf.VehiclePdfDocument;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,12 +24,12 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Generates individual and lot-wide PDF documents from a workspace analysis.
+ * Generates individual and per-group PDF documents from a workspace analysis.
  * <br/>
  * Every output produced by one invocation shares a version timestamp. An
- * individual document contains its group brochure followed by vehicle
- * documents in numeric order. Consolidated requests and technical sheets are
- * ordered globally by document group and vehicle marker.
+ * individual document includes shared and vehicle PDFs in numeric position
+ * order. Each group output includes its shared PDFs once and all vehicle PDFs,
+ * ordered by document number and marker.
  *
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
@@ -109,76 +108,37 @@ public final class WorkspacePdfWriter {
         var version = VERSION_FORMATTER.format(LocalDateTime.now(clock));
         Map<Path, List<Path>> mergePlan = new LinkedHashMap<>();
         List<Path> individualFiles = new ArrayList<>();
-        List<PdfDocument> vehicleDocuments = new ArrayList<>();
+        List<Path> groupFiles = new ArrayList<>();
 
         for (var group : analysis.groups()) {
-            var brochure = group.brochure()
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Document group %d has no unique brochure."
-                                    .formatted(group.group())));
-
+            group.brochure().orElseThrow(() -> new IllegalArgumentException(
+                    "Document group must contain exactly one brochure."));
+            List<PdfDocument> groupDocuments = new ArrayList<>(group.commonDocuments());
             for (var vehicle : group.vehicles()) {
                 requireMandatoryDocuments(group, vehicle);
-
-                var identifier = vehicle.identifier()
-                        .orElseThrow(() -> new IllegalArgumentException(
-                                ("Vehicle marker '%s' does not identify "
-                                        + "exactly one workbook vehicle.")
-                                        .formatted(vehicle.marker())));
-
-                var destination = analysis.workspace()
-                        .individualOutputDirectory()
-                        .resolve(individualFileName(
-                                identifier.vehicleIdentifier(),
-                                version));
-
-                List<Path> sources = new ArrayList<>();
-                sources.add(brochure.path());
-                vehicle.documents()
-                        .stream()
-                        .sorted(Comparator
-                                .comparingInt(
-                                        VehiclePdfDocument::documentNumber)
-                                .thenComparing(document ->
-                                        document.path().toString()))
-                        .forEach(document -> {
-                            sources.add(document.path());
-                            vehicleDocuments.add(document);
-                        });
-
-                addMerge(mergePlan, destination, sources);
+                var identifier = vehicle.identifier().orElseThrow(() ->
+                        new IllegalArgumentException("Vehicle marker must identify exactly one workbook vehicle."));
+                var destination = analysis.workspace().individualOutputDirectory()
+                        .resolve(individualFileName(identifier.vehicleIdentifier(), version));
+                addMerge(mergePlan, destination, group.documentsFor(vehicle).stream()
+                        .map(PdfDocument::path).toList());
                 individualFiles.add(destination.toAbsolutePath().normalize());
+                groupDocuments.addAll(vehicle.documents());
             }
+            groupDocuments.sort(Comparator.comparingInt(PdfDocument::documentNumber)
+                    .thenComparing(document -> document instanceof VehiclePdfDocument vehicle
+                            ? vehicle.marker() : "")
+                    .thenComparing(document -> document.path().toString()));
+            var destination = analysis.workspace().consolidatedOutputDirectory()
+                    .resolve("Expediente Grupo %d %s.pdf".formatted(group.group(), version));
+            addMerge(mergePlan, destination, groupDocuments.stream().map(PdfDocument::path).toList());
+            groupFiles.add(destination.toAbsolutePath().normalize());
         }
-
-        var requestOutput = analysis.workspace()
-                .consolidatedOutputDirectory()
-                .resolve("Solicitudes consolidadas %s.pdf".formatted(version));
-        var technicalSheetOutput = analysis.workspace()
-                .consolidatedOutputDirectory()
-                .resolve("Fichas técnicas consolidadas %s.pdf"
-                        .formatted(version));
-
-        addMerge(
-                mergePlan,
-                requestOutput,
-                consolidationSources(
-                        vehicleDocuments,
-                        REQUEST_DOCUMENT_NUMBER));
-        addMerge(
-                mergePlan,
-                technicalSheetOutput,
-                consolidationSources(
-                        vehicleDocuments,
-                        TECHNICAL_SHEET_DOCUMENT_NUMBER));
 
         ensureDestinationsAvailable(mergePlan.keySet());
         executeMergePlan(mergePlan);
 
-        return new WorkspacePdfOutput(
-                individualFiles,
-                requestOutput.toAbsolutePath().normalize(),
-                technicalSheetOutput.toAbsolutePath().normalize());
+        return new WorkspacePdfOutput(individualFiles, groupFiles);
     }
 
     /**
@@ -191,11 +151,11 @@ public final class WorkspacePdfWriter {
     private static void requireMandatoryDocuments(
             WorkspaceGroup group,
             WorkspaceVehicle vehicle) {
-        var hasRequest = vehicle.documents()
+        var hasRequest = group.documentsFor(vehicle)
                 .stream()
                 .anyMatch(document ->
                         document.documentNumber() == REQUEST_DOCUMENT_NUMBER);
-        var hasTechnicalSheet = vehicle.documents()
+        var hasTechnicalSheet = group.documentsFor(vehicle)
                 .stream()
                 .anyMatch(document -> document.documentNumber()
                         == TECHNICAL_SHEET_DOCUMENT_NUMBER);
@@ -232,26 +192,6 @@ public final class WorkspacePdfWriter {
         }
 
         return "%s %s.pdf".formatted(identifier, version);
-    }
-
-    /**
-     * Selects source paths for one lot-wide document consolidation.
-     *
-     * @param documents analyzed vehicle documents
-     * @param documentNumber document number to consolidate
-     * @return source paths ordered by group and marker
-     */
-    private static List<Path> consolidationSources(
-            List<? extends PdfDocument> documents,
-            int documentNumber) {
-        List<PdfDocument> sourceDocuments = new ArrayList<>(documents);
-
-        return PdfDocuments.forConsolidation(
-                        sourceDocuments,
-                        documentNumber)
-                .stream()
-                .map(VehiclePdfDocument::path)
-                .toList();
     }
 
     /**

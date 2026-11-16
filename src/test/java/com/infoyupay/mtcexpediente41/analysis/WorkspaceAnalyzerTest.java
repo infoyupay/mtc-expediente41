@@ -204,6 +204,19 @@ class WorkspaceAnalyzerTest {
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 
+    @Test
+    void should_reject_mixed_and_duplicate_shared_positions() throws Exception {
+        var result = analyzer.analyze(workspace(),
+                List.of(new SheetVehicleIdentifier("Vehicle", "VIN000000000A1B2")),
+                new com.infoyupay.mtcexpediente41.pdf.PdfDocumentParser().parseAll(List.of(
+                        Path.of("1.1 Catálogo.pdf"), Path.of("1.2 A1B2.pdf"),
+                        Path.of("1.2 Documento sin marcador.pdf"),
+                        Path.of("1.3 Anexo común.pdf"), Path.of("1.3 Otro anexo común.pdf"))));
+        assertThat(result.canProceed()).isFalse();
+        assertThat(result.problems()).extracting(WorkspaceAnalysisProblem::type)
+                .contains(WorkspaceAnalysisProblemType.INVALID_DOCUMENT_POSITION);
+    }
+
     /**
      * Creates a group brochure test document.
      *

@@ -106,17 +106,10 @@ class PdfDocumentParserTest {
                         });
     }
 
-    /**
-     * Verifies that vehicle documents without a trailing marker are rejected.
-     */
     @Test
-    void shouldRejectVehicleDocumentWithoutMarker() {
-        var path = Path.of("1.2 Special.pdf");
-
-        assertThatExceptionOfType(PdfDocumentNameException.class)
-                .isThrownBy(() -> parser.parse(path))
-                .withMessageContaining(
-                        "four-character alphanumeric marker");
+    void shouldParseSharedDocumentAtAnyPosition() throws Exception {
+        assertThat(parser.parse(Path.of("1.3 Anexo común grupo A.pdf")))
+                .isEqualTo(new GroupPdfDocument(1, 3, Path.of("1.3 Anexo común grupo A.pdf")));
     }
 
     /**

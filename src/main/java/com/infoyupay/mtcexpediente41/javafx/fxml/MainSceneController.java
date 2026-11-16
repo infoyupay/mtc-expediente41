@@ -165,6 +165,10 @@ public final class MainSceneController {
                     Integer.toString(group.group()),
                     brochure));
 
+            for (var common : group.commonDocuments()) {
+                groupItem.getChildren().add(new TreeItem<>(TreeTableVehicle.documentLeaf(
+                        common.documentNumber() + " (común)", common.path())));
+            }
             for (var vehicle : group.vehicles()) {
                 var vin = vehicle.identifiers()
                         .stream()

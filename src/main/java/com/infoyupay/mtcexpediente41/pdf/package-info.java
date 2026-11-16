@@ -3,10 +3,10 @@
  * file names identify their group, document number, and optional vehicle
  * marker.
  * <br/>
- * Group brochures are shared by every vehicle in their group and therefore do
+ * Group documents are shared by every vehicle in their group and therefore do
  * not carry a marker. Vehicle documents carry a four-character alphanumeric
- * marker and can be selected and ordered by group and marker when producing
- * consolidated files for the complete batch.
+ * marker. Both types are interleaved in numeric position order when producing
+ * individual and complete group expedientes.
  *
  * @author David Vidal - InfoYupay SACS
  * @version 1.0

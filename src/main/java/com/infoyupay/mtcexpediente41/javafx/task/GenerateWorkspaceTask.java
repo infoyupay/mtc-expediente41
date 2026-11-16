@@ -45,8 +45,8 @@ public final class GenerateWorkspaceTask extends Task<WorkspacePdfOutput> {
         updateMessage("Iniciando generación de expedientes PDF...");
         var output = new WorkspacePdfWriter().write(analysis);
         updateMessage(
-                "Se generaron %d expedientes individuales y 2 consolidados."
-                        .formatted(output.individualFiles().size()));
+                "Se generaron %d expedientes individuales y %d grupales."
+                        .formatted(output.individualFiles().size(), output.groupFiles().size()));
         return output;
     }
 }

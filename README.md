@@ -49,39 +49,34 @@ group.document
 Both values are positive integers separated by a dot. Leading zeroes are
 supported in either value, so `01.01` and `01.1` are equivalent to `1.1`:
 
-- Document `1` is the manufacturer brochure shared by the entire group.
-- Document `2` is the vehicle request.
-- Document `3` is the technical specification sheet.
-- Documents `4` and above are optional additional documents.
+Document positions are ordered numerically within each group. Position `1`
+remains the shared catalog; positions `2` and `3` remain mandatory but can
+now contain either shared or individual documents. Positions `4` and above
+are optional.
 
-The brochure does not carry a VIN marker. Every vehicle-specific document
-(`2` and above) must end with a space followed by the final four alphanumeric
-characters of the VIN.
-
-Recommended format:
-
-```text
-<group>.<document> <description> <last-four-VIN-characters>.pdf
-```
-
-Example for group `3` and a vehicle whose VIN ends in `4821`:
+A single PDF without a VIN marker is shared by every vehicle in its group.
+Repeated positions must contain one PDF per vehicle, ending with a space and
+the final four ASCII alphanumeric characters of the VIN. A PDF carrying a
+marker stays individual even when it is the only PDF at that position, which
+supports groups with a single vehicle. Position `1` is always shared, so a
+catalog description may end with a year.
 
 ```text
-03.01 Manufacturer Brochure.pdf
-03.02 Special Characteristics 4821.pdf
-03.03 Technical Sheet 4821.pdf
-03.04 Transfer Order 4821.pdf
-03.05 Photographic Panel 4821.pdf
+1.1 Catálogo grupo A.pdf
+1.2 0025.pdf
+1.2 A1B2.pdf
+1.3 Anexo común grupo A.pdf
+2.1 Catálogo grupo B.pdf
+2.2 3451.pdf
+2.3 Anexo común grupo B.pdf
 ```
 
-Descriptions are free text. The significant parts are the numeric
-`group.document` prefix and, for vehicle-specific documents, the
-four-character alphanumeric marker immediately before `.pdf`. File suffix
-matching is case-insensitive.
-
-Each group must contain exactly one brochure. Every vehicle must contain
-documents `2` and `3`; document numbers must not be duplicated for the same
-vehicle and group.
+Descriptions are free text. Leading zeroes in the prefix and case-insensitive
+PDF extensions are supported. Shared documents must not be repeated or mixed
+with individual documents at the same position. Each group must contain
+exactly one catalog and at least one vehicle-specific document. Vehicle document
+numbers must not be duplicated for the same marker and group. A shared document
+at position `2` or `3` satisfies that mandatory position for every group vehicle.
 
 ## Using the application
 
@@ -94,7 +89,7 @@ vehicle and group.
 
 The application generates files only when the workbook and PDF inventory are
 internally consistent. Among other checks, it detects missing or duplicate
-brochures, missing mandatory documents, unknown or ambiguous VIN markers,
+brochures, missing mandatory positions, unknown or ambiguous VIN markers,
 vehicles assigned to multiple groups, duplicate document numbers, and workbook
 vehicles without PDFs.
 
@@ -116,31 +111,24 @@ One file is created per VIN:
 Expedientes/Individuales/<VIN> verYYYY-MM-dd_HH-mm.pdf
 ```
 
-Its contents are merged in this order:
+Its contents are merged in ascending document-number order, combining every
+shared document with the documents for that vehicle only.
 
-1. The group brochure (`n.1`).
-2. The vehicle request (`n.2`).
-3. The technical specification sheet (`n.3`).
-4. Any additional documents (`n.4+`) in ascending document-number order.
+For the example above, vehicle `0025` receives `1.1`, `1.2 0025`, and `1.3`.
+Vehicle `A1B2` receives `1.1`, `1.2 A1B2`, and `1.3`.
 
-Example:
+### Group expedientes
 
-```text
-Expedientes/Individuales/LZZ5EL3D5RA124821 ver2026-07-27_14-35.pdf
-```
-
-### Consolidated documents
-
-Exactly two lot-wide files are created:
+One complete PDF is created per group:
 
 ```text
-Expedientes/Consolidados/Solicitudes consolidadas verYYYY-MM-dd_HH-mm.pdf
-Expedientes/Consolidados/Fichas técnicas consolidadas verYYYY-MM-dd_HH-mm.pdf
+Expedientes/Consolidados/Expediente Grupo <group> verYYYY-MM-dd_HH-mm.pdf
 ```
 
-The first contains every `n.2` request and the second every `n.3` technical
-sheet, ordered by document group and vehicle marker. Their names intentionally
-do not retain any individual group identity.
+Each contains the shared documents once, plus all individual documents from
+that group. Sources are ordered numerically by document position, and then
+by vehicle marker within each position. For example, group `1` contains
+`1.1`, `1.2 0025`, `1.2 A1B2`, and `1.3`.
 
 All files produced by one generation share the same timestamp. Existing output
 files are never overwritten. Running generation twice within the same minute

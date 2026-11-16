@@ -6,15 +6,17 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 /**
- * Represents a brochure shared by every vehicle in one document group.
+ * Represents a numbered PDF shared by every vehicle in one document group.
  *
  * @param group document group
+ * @param documentNumber positive position in the group
  * @param path source PDF path
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
  */
 public record GroupPdfDocument(
         int group,
+        int documentNumber,
         @NotNull Path path
 ) implements PdfDocument {
 
@@ -30,16 +32,14 @@ public record GroupPdfDocument(
                     "Document group must be positive.");
         }
 
+        if (documentNumber < 1) {
+            throw new IllegalArgumentException("Document number must be positive.");
+        }
         Objects.requireNonNull(path, "path");
     }
 
-    /**
-     * Returns the brochure document number.
-     *
-     * @return {@code 1}
-     */
-    @Override
-    public int documentNumber() {
-        return 1;
+    /** Creates a shared document at the traditional brochure position. */
+    public GroupPdfDocument(int group, @NotNull Path path) {
+        this(group, 1, path);
     }
 }

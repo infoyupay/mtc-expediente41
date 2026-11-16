@@ -1,9 +1,12 @@
 package com.infoyupay.mtcexpediente41.analysis;
 
 import com.infoyupay.mtcexpediente41.pdf.GroupPdfDocument;
+import com.infoyupay.mtcexpediente41.pdf.PdfDocument;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -15,7 +18,7 @@ import java.util.Optional;
  * position, with unknown markers placed last.
  *
  * @param group positive document group
- * @param brochures group-scoped brochure documents
+ * @param commonDocuments group-scoped shared documents
  * @param vehicles vehicles represented by documents in this group
  *
  * @author David Vidal - InfoYupay SACS
@@ -23,7 +26,7 @@ import java.util.Optional;
  */
 public record WorkspaceGroup(
         int group,
-        @NotNull List<@NotNull GroupPdfDocument> brochures,
+        @NotNull List<@NotNull GroupPdfDocument> commonDocuments,
         @NotNull List<@NotNull WorkspaceVehicle> vehicles
 ) {
 
@@ -31,14 +34,14 @@ public record WorkspaceGroup(
      * Creates an immutable analyzed document group.
      *
      * @param group positive document group
-     * @param brochures group-scoped brochure documents
+     * @param commonDocuments group-scoped shared documents
      * @param vehicles vehicles represented by documents in this group
      */
     public WorkspaceGroup {
-        Objects.requireNonNull(brochures, "brochures");
+        Objects.requireNonNull(commonDocuments, "commonDocuments");
         Objects.requireNonNull(vehicles, "vehicles");
 
-        brochures = List.copyOf(brochures);
+        commonDocuments = List.copyOf(commonDocuments);
         vehicles = List.copyOf(vehicles);
 
         if (group < 1) {
@@ -46,10 +49,10 @@ public record WorkspaceGroup(
                     "Document group must be positive.");
         }
 
-        if (brochures.stream()
+        if (commonDocuments.stream()
                 .anyMatch(document -> document.group() != group)) {
             throw new IllegalArgumentException(
-                    "Every brochure must belong to the analyzed group.");
+                    "Every shared document must belong to the analyzed group.");
         }
 
         if (vehicles.stream()
@@ -60,12 +63,31 @@ public record WorkspaceGroup(
         }
     }
 
+    /** Returns the shared documents at the brochure position. */
+    public @NotNull List<GroupPdfDocument> brochures() {
+        return commonDocuments.stream()
+                .filter(document -> document.documentNumber() == 1)
+                .toList();
+    }
+
+    /** Returns the ordered sources for one individual expediente. */
+    public @NotNull List<PdfDocument> documentsFor(
+            @NotNull WorkspaceVehicle vehicle) {
+        List<PdfDocument> documents =
+                new ArrayList<>(commonDocuments);
+        documents.addAll(vehicle.documents());
+        documents.sort(Comparator.comparingInt(
+                PdfDocument::documentNumber));
+        return List.copyOf(documents);
+    }
+
     /**
      * Returns the brochure when the group contains exactly one.
      *
      * @return unique group brochure, or an empty optional
      */
     public @NotNull Optional<GroupPdfDocument> brochure() {
+        var brochures = brochures();
         return brochures.size() == 1
                 ? Optional.of(brochures.getFirst())
                 : Optional.empty();

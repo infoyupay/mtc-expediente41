@@ -19,6 +19,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.INVALID_DOCUMENT_POSITION;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.AMBIGUOUS_VEHICLE_MARKER;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.DUPLICATE_GROUP_BROCHURE;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.DUPLICATE_VEHICLE_DOCUMENT;
@@ -263,11 +264,12 @@ public final class WorkspaceAnalyzer {
         List<WorkspaceGroup> result = new ArrayList<>(groupNumbers.size());
 
         for (var group : groupNumbers) {
-            var brochures = documents.stream()
+            var commonDocuments = documents.stream()
                     .filter(GroupPdfDocument.class::isInstance)
                     .map(GroupPdfDocument.class::cast)
                     .filter(document -> document.group() == group)
-                    .sorted(BY_PATH)
+                    .sorted(Comparator.comparingInt(GroupPdfDocument::documentNumber)
+                            .thenComparing(BY_PATH))
                     .toList();
 
             var groupVehicleDocuments = documents.stream()
@@ -278,7 +280,7 @@ public final class WorkspaceAnalyzer {
 
             reportGroupProblems(
                     group,
-                    brochures,
+                    commonDocuments,
                     groupVehicleDocuments,
                     problems);
 
@@ -289,7 +291,7 @@ public final class WorkspaceAnalyzer {
                     markerOrder,
                     problems);
 
-            result.add(new WorkspaceGroup(group, brochures, vehicles));
+            result.add(new WorkspaceGroup(group, commonDocuments, vehicles));
         }
 
         return List.copyOf(result);
@@ -321,15 +323,17 @@ public final class WorkspaceAnalyzer {
      * Reports missing, duplicate, or empty group-level source data.
      *
      * @param group document group
-     * @param brochures group brochure documents
+     * @param commonDocuments group shared documents
      * @param vehicleDocuments group vehicle documents
      * @param problems destination for detected problems
      */
     private static void reportGroupProblems(
             int group,
-            List<GroupPdfDocument> brochures,
+            List<GroupPdfDocument> commonDocuments,
             List<VehiclePdfDocument> vehicleDocuments,
             List<WorkspaceAnalysisProblem> problems) {
+        var brochures = commonDocuments.stream()
+                .filter(document -> document.documentNumber() == 1).toList();
         if (brochures.isEmpty()) {
             problems.add(problem(
                     MISSING_GROUP_BROCHURE,
@@ -341,6 +345,21 @@ public final class WorkspaceAnalyzer {
                     "Document group %d contains %d brochures."
                             .formatted(group, brochures.size())));
         }
+
+        var sharedPositions = commonDocuments.stream()
+                .collect(Collectors.groupingBy(GroupPdfDocument::documentNumber,
+                        TreeMap::new, Collectors.counting()));
+        sharedPositions.forEach((position, count) -> {
+            var mixed = vehicleDocuments.stream()
+                    .anyMatch(document -> document.documentNumber() == position);
+            if (position != 1 && (count > 1 || mixed)) {
+                problems.add(problem(INVALID_DOCUMENT_POSITION,
+                        ("Document group %d position %d mixes shared/individual PDFs "
+                                + "or repeats a shared PDF; repeated positions require "
+                                + "four-character alphanumeric markers.")
+                                .formatted(group, position)));
+            }
+        });
 
         if (vehicleDocuments.isEmpty()) {
             problems.add(problem(

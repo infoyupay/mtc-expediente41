@@ -48,7 +48,7 @@ class WorkspacePdfWriterTest {
 
     /**
      * Verifies versioned output names, individual document order, and global
-     * request and technical-sheet consolidation order.
+     * complete group document order.
      *
      * @throws Exception if the PDF fixture or generated output cannot be
      *                   written or read
@@ -138,24 +138,71 @@ class WorkspacePdfWriterTest {
                 .containsExactly(
                         "LZZ5BLND7SAJ01001 ver2026-07-27_18-45.pdf",
                         "LZZ5BLND5SAJ01002 ver2026-07-27_18-45.pdf");
-        assertThat(output.consolidatedRequests().getFileName().toString())
-                .isEqualTo(
-                        "Solicitudes consolidadas ver2026-07-27_18-45.pdf");
-        assertThat(output.consolidatedTechnicalSheets()
-                .getFileName()
-                .toString())
-                .isEqualTo(
-                        "Fichas técnicas consolidadas "
-                                + "ver2026-07-27_18-45.pdf");
+        assertThat(output.groupFiles())
+                .extracting(path -> path.getFileName().toString())
+                .containsExactly("Expediente Grupo 2 ver2026-07-27_18-45.pdf",
+                        "Expediente Grupo 1 ver2026-07-27_18-45.pdf");
 
         assertPageWidths(output.individualFiles().getFirst(),
                 201F, 202F, 203F);
         assertPageWidths(output.individualFiles().getLast(),
                 101F, 102F, 103F, 104F);
-        assertPageWidths(output.consolidatedRequests(),
-                102F, 202F);
-        assertPageWidths(output.consolidatedTechnicalSheets(),
-                103F, 203F);
+        assertPageWidths(output.groupFiles().getFirst(), 201F, 202F, 203F);
+        assertPageWidths(output.groupFiles().getLast(), 101F, 102F, 103F, 104F);
+    }
+
+    @Test
+    void should_merge_mixed_groups_in_numeric_position_order() throws Exception {
+        var names = List.of("1.1 Catálogo grupo A.pdf", "1.2 0027.pdf", "1.2 A1B2.pdf",
+                "1.3 Anexo común grupo A.pdf", "1.10 Final común.pdf",
+                "2.1 Catálogo grupo B.pdf", "2.2 3451.pdf", "2.3 Anexo común grupo B.pdf");
+        var widths = List.of(101F, 127F, 112F, 103F, 110F, 201F, 202F, 203F);
+        List<Path> paths = new ArrayList<>();
+        for (int i = 0; i < names.size(); i++) {
+            paths.add(createPdf(tempDirectory.resolve(names.get(i)), widths.get(i)));
+        }
+        var identifiers = List.of(new SheetVehicleIdentifier("A", "VIN000000000A1B2"),
+                new SheetVehicleIdentifier("B", "VIN0000000000027"),
+                new SheetVehicleIdentifier("C", "VIN0000000003451"));
+        java.util.Collections.reverse(paths);
+        var analysis = new com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalyzer().analyze(
+                workspace(tempDirectory), identifiers,
+                new com.infoyupay.mtcexpediente41.pdf.PdfDocumentParser().parseAll(paths));
+        assertThat(analysis.problems()).isEmpty();
+        var writer = new WorkspacePdfWriter(Clock.fixed(Instant.parse("2026-11-16T12:00:00Z"),
+                ZoneId.of("America/Lima")));
+        var output = writer.write(analysis);
+        assertPageWidths(output.individualFiles().get(0), 101F, 112F, 103F, 110F);
+        assertPageWidths(output.individualFiles().get(1), 101F, 127F, 103F, 110F);
+        assertPageWidths(output.individualFiles().get(2), 201F, 202F, 203F);
+        assertPageWidths(output.groupFiles().get(0), 101F, 127F, 112F, 103F, 110F);
+        assertPageWidths(output.groupFiles().get(1), 201F, 202F, 203F);
+        assertThat(org.assertj.core.api.Assertions.catchThrowable(() -> writer.write(analysis)))
+                .isInstanceOf(java.nio.file.FileAlreadyExistsException.class);
+        assertPageWidths(output.groupFiles().get(0), 101F, 127F, 112F, 103F, 110F);
+    }
+
+    @Test
+    void should_accept_shared_request_and_require_missing_technical_sheet() throws Exception {
+        var catalog = createPdf(tempDirectory.resolve("1.1 Catálogo.pdf"), 101F);
+        var request = createPdf(tempDirectory.resolve("1.2 Solicitud común.pdf"), 102F);
+        var technical = createPdf(tempDirectory.resolve("1.3 A1B2.pdf"), 103F);
+        var identifier = new SheetVehicleIdentifier("Vehicle", "VIN000000000A1B2");
+        var analyzer = new com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalyzer();
+        var parser = new com.infoyupay.mtcexpediente41.pdf.PdfDocumentParser();
+        var analysis = analyzer.analyze(workspace(tempDirectory), List.of(identifier),
+                parser.parseAll(List.of(catalog, request, technical)));
+        var output = new WorkspacePdfWriter().write(analysis);
+        assertPageWidths(output.individualFiles().getFirst(), 101F, 102F, 103F);
+        assertPageWidths(output.groupFiles().getFirst(), 101F, 102F, 103F);
+
+        var incomplete = analyzer.analyze(workspace(tempDirectory), List.of(identifier),
+                parser.parseAll(List.of(catalog,
+                        Path.of("1.2 A1B2.pdf"))));
+        assertThat(org.assertj.core.api.Assertions.catchThrowable(() ->
+                new WorkspacePdfWriter().write(incomplete)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("documents 2 and 3");
     }
 
     /**
