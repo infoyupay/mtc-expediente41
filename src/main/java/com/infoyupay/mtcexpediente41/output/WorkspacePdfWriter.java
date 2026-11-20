@@ -111,8 +111,10 @@ public final class WorkspacePdfWriter {
         List<Path> groupFiles = new ArrayList<>();
 
         for (var group : analysis.groups()) {
-            group.brochure().orElseThrow(() -> new IllegalArgumentException(
-                    "Document group must contain exactly one brochure."));
+            if (group.commonDocuments().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Document group must contain at least one shared document.");
+            }
             List<PdfDocument> groupDocuments = new ArrayList<>(group.commonDocuments());
             for (var vehicle : group.vehicles()) {
                 requireMandatoryDocuments(group, vehicle);

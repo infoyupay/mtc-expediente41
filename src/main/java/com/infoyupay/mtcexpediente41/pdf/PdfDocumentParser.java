@@ -12,10 +12,9 @@ import java.util.regex.Pattern;
  * Parses document metadata encoded in deterministic source PDF file names.
  * <br/>
  * Names begin with a group and document number separated by a dot. Both
- * positive numbers may contain leading zeroes. A document without a trailing
- * four-character alphanumeric marker is shared by the group. Position one
- * retains its traditional role as a shared brochure. Repeated positions are
- * validated during workspace analysis.
+ * positive numbers may contain leading zeroes. A document ending with a
+ * four-character alphanumeric marker is vehicle-specific, regardless of its
+ * document position. A document without that marker is shared by the group.
  *
  * @author David Vidal - InfoYupay SACS
  * @version 1.0
@@ -63,10 +62,6 @@ public final class PdfDocumentParser {
             var group = Integer.parseInt(fileNameMatcher.group("group"));
             var documentNumber = Integer.parseInt(
                     fileNameMatcher.group("document"));
-
-            if (documentNumber == 1) {
-                return new GroupPdfDocument(group, path);
-            }
 
             var markerMatcher = MARKER_PATTERN.matcher(fileName);
             if (!markerMatcher.find()) {

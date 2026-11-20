@@ -11,11 +11,11 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.AMBIGUOUS_VEHICLE_MARKER;
-import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.DUPLICATE_GROUP_BROCHURE;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.DUPLICATE_VEHICLE_DOCUMENT;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.GROUP_WITHOUT_VEHICLES;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.INVALID_VEHICLE_MARKER;
-import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.MISSING_GROUP_BROCHURE;
+import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.MISSING_GROUP_COMMON_DOCUMENT;
+import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.INVALID_DOCUMENT_POSITION;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.UNKNOWN_VEHICLE_MARKER;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.VEHICLE_IN_MULTIPLE_GROUPS;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.VEHICLE_WITHOUT_DOCUMENTS;
@@ -154,10 +154,10 @@ class WorkspaceAnalyzerTest {
                         INVALID_VEHICLE_MARKER,
                         AMBIGUOUS_VEHICLE_MARKER,
                         VEHICLE_IN_MULTIPLE_GROUPS,
-                        DUPLICATE_GROUP_BROCHURE,
+                        INVALID_DOCUMENT_POSITION,
                         DUPLICATE_VEHICLE_DOCUMENT,
                         UNKNOWN_VEHICLE_MARKER,
-                        MISSING_GROUP_BROCHURE,
+                        MISSING_GROUP_COMMON_DOCUMENT,
                         GROUP_WITHOUT_VEHICLES,
                         VEHICLE_WITHOUT_DOCUMENTS);
     }

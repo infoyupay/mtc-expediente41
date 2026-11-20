@@ -21,11 +21,10 @@ import java.util.stream.Collectors;
 
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.INVALID_DOCUMENT_POSITION;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.AMBIGUOUS_VEHICLE_MARKER;
-import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.DUPLICATE_GROUP_BROCHURE;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.DUPLICATE_VEHICLE_DOCUMENT;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.GROUP_WITHOUT_VEHICLES;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.INVALID_VEHICLE_MARKER;
-import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.MISSING_GROUP_BROCHURE;
+import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.MISSING_GROUP_COMMON_DOCUMENT;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.UNKNOWN_VEHICLE_MARKER;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.VEHICLE_IN_MULTIPLE_GROUPS;
 import static com.infoyupay.mtcexpediente41.analysis.WorkspaceAnalysisProblemType.VEHICLE_WITHOUT_DOCUMENTS;
@@ -332,18 +331,11 @@ public final class WorkspaceAnalyzer {
             List<GroupPdfDocument> commonDocuments,
             List<VehiclePdfDocument> vehicleDocuments,
             List<WorkspaceAnalysisProblem> problems) {
-        var brochures = commonDocuments.stream()
-                .filter(document -> document.documentNumber() == 1).toList();
-        if (brochures.isEmpty()) {
+        if (commonDocuments.isEmpty()) {
             problems.add(problem(
-                    MISSING_GROUP_BROCHURE,
-                    "Document group %d does not contain a brochure."
+                    MISSING_GROUP_COMMON_DOCUMENT,
+                    "Document group %d does not contain a shared document."
                             .formatted(group)));
-        } else if (brochures.size() > 1) {
-            problems.add(problem(
-                    DUPLICATE_GROUP_BROCHURE,
-                    "Document group %d contains %d brochures."
-                            .formatted(group, brochures.size())));
         }
 
         var sharedPositions = commonDocuments.stream()
@@ -352,7 +344,7 @@ public final class WorkspaceAnalyzer {
         sharedPositions.forEach((position, count) -> {
             var mixed = vehicleDocuments.stream()
                     .anyMatch(document -> document.documentNumber() == position);
-            if (position != 1 && (count > 1 || mixed)) {
+            if (count > 1 || mixed) {
                 problems.add(problem(INVALID_DOCUMENT_POSITION,
                         ("Document group %d position %d mixes shared/individual PDFs "
                                 + "or repeats a shared PDF; repeated positions require "

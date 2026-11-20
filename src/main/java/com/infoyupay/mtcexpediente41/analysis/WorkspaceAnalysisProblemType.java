@@ -35,16 +35,8 @@ public enum WorkspaceAnalysisProblemType {
      */
     VEHICLE_WITHOUT_DOCUMENTS,
 
-    /**
-     * A document group does not contain its shared brochure.
-     */
-    MISSING_GROUP_BROCHURE,
-
-    /**
-     * A document group contains more than one shared brochure.
-     */
-    DUPLICATE_GROUP_BROCHURE,
-
+    /** A document group contains no shared documents. */
+    MISSING_GROUP_COMMON_DOCUMENT,
     /**
      * A document group contains no vehicle-specific documents.
      */

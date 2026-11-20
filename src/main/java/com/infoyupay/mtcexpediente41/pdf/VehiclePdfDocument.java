@@ -51,9 +51,9 @@ public record VehiclePdfDocument(
                     "Document group must be positive.");
         }
 
-        if (documentNumber < 2) {
+        if (documentNumber < 1) {
             throw new IllegalArgumentException(
-                    "Vehicle document number must be greater than one.");
+                    "Vehicle document number must be positive.");
         }
 
         Objects.requireNonNull(marker, "marker");

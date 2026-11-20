@@ -27,17 +27,16 @@ public final class PdfDocuments {
      * @param documents parsed PDF documents
      * @param documentNumber vehicle document number to consolidate
      * @return immutable consolidation sequence
-     * @throws IllegalArgumentException if the document number belongs to the
-     *                                  group brochure
+     * @throws IllegalArgumentException if the document number is not positive
      */
     public static @NotNull List<@NotNull VehiclePdfDocument> forConsolidation(
             @NotNull Iterable<@NotNull PdfDocument> documents,
             int documentNumber) {
         Objects.requireNonNull(documents, "documents");
 
-        if (documentNumber < 2) {
+        if (documentNumber < 1) {
             throw new IllegalArgumentException(
-                    "Consolidation requires a vehicle document number.");
+                    "Consolidation requires a positive document number.");
         }
 
         List<VehiclePdfDocument> selectedDocuments = new ArrayList<>();

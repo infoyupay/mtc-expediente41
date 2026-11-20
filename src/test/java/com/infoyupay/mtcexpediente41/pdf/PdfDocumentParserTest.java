@@ -43,7 +43,7 @@ class PdfDocumentParserTest {
     @Test
     void shouldParseGroupBrochureWithoutMarker()
             throws PdfDocumentNameException {
-        var path = Path.of("01.01 Brochure Model 2024.pdf");
+        var path = Path.of("01.01 Brochure Model.pdf");
 
         var document = parser.parse(path);
 

@@ -49,17 +49,14 @@ group.document
 Both values are positive integers separated by a dot. Leading zeroes are
 supported in either value, so `01.01` and `01.1` are equivalent to `1.1`:
 
-Document positions are ordered numerically within each group. Position `1`
-remains the shared catalog; positions `2` and `3` remain mandatory but can
-now contain either shared or individual documents. Positions `4` and above
-are optional.
+Document positions are ordered numerically within each group. Every position
+can contain a shared or individual PDF. Positions `2` and `3` remain mandatory;
+positions `4` and above are optional.
 
-A single PDF without a VIN marker is shared by every vehicle in its group.
-Repeated positions must contain one PDF per vehicle, ending with a space and
-the final four ASCII alphanumeric characters of the VIN. A PDF carrying a
-marker stays individual even when it is the only PDF at that position, which
-supports groups with a single vehicle. Position `1` is always shared, so a
-catalog description may end with a year.
+A PDF without a VIN marker is shared by every vehicle in its group. An
+individual PDF ends with a space and the final four ASCII alphanumeric
+characters of its VIN, at any document position. This also supports groups
+with a single vehicle. Each group must contain at least one shared PDF.
 
 ```text
 1.1 Catálogo grupo A.pdf
@@ -73,10 +70,11 @@ catalog description may end with a year.
 
 Descriptions are free text. Leading zeroes in the prefix and case-insensitive
 PDF extensions are supported. Shared documents must not be repeated or mixed
-with individual documents at the same position. Each group must contain
-exactly one catalog and at least one vehicle-specific document. Vehicle document
-numbers must not be duplicated for the same marker and group. A shared document
-at position `2` or `3` satisfies that mandatory position for every group vehicle.
+with individual documents at the same position. Vehicle document numbers must
+not be duplicated for the same marker and group. A shared document at position
+`2` or `3` satisfies that mandatory position for every group vehicle. Avoid
+ending shared-document names with a standalone four-character alphanumeric
+token, since that suffix identifies an individual VIN.
 
 ## Using the application
 
@@ -88,8 +86,8 @@ at position `2` or `3` satisfies that mandatory position for every group vehicle
 5. Select **Generar** once the analysis is valid.
 
 The application generates files only when the workbook and PDF inventory are
-internally consistent. Among other checks, it detects missing or duplicate
-brochures, missing mandatory positions, unknown or ambiguous VIN markers,
+internally consistent. Among other checks, it detects groups without shared
+documents, missing mandatory positions, unknown or ambiguous VIN markers,
 vehicles assigned to multiple groups, duplicate document numbers, and workbook
 vehicles without PDFs.
 
